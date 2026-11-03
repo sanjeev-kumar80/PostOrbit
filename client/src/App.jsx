@@ -36,12 +36,14 @@
 
 
 
+
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home";
 import LoginSelection from "./pages/LoginSelection";
 import UserLogin from "./pages/UserLogin";
 import AdminLogin from "./pages/AdminLogin";
+import UserSignup from "./pages/UserSignup";
 
 function App() {
   return (
@@ -50,9 +52,12 @@ function App() {
       <Route path="/login" element={<LoginSelection />} />
       <Route path="/user-login" element={<UserLogin />} />
       <Route path="/admin-login" element={<AdminLogin />} />
+      <Route path="/signup" element={<UserSignup />} />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
 
 export default App;
+
