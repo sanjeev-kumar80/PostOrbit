@@ -2,6 +2,7 @@
 import { Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
 import LoginSelection from './pages/LoginSelection';
+// import Navbar from "../components/Navbar";
 
 function LoginPlaceholder({ role }) {
   return (

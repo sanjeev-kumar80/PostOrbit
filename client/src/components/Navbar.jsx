@@ -1,89 +1,143 @@
 
-import { useState } from 'react';
-import { Menu, X, Orbit } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext";
+import { useLoginModal } from "../context/LoginModalContext";
 
-export default function Navbar() {
+function SunIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" className="h-5 w-5">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42" />
+    </svg>
+  );
+}
+
+function MoonIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"
+      className="h-5 w-5">
+      <path d="M20.9 13A9 9 0 0 1 11 3.1 9 9 0 1 0 20.9 13Z" />
+    </svg>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" className="h-6 w-6">
+      <path d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      strokeWidth="2" strokeLinecap="round" className="h-6 w-6">
+      <path d="m18 6-12 12M6 6l12 12" />
+    </svg>
+  );
+}
+
+function Navbar() {
+  const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { openLoginModal } = useLoginModal();
 
   const links = [
-    ['Home', '#home'],
-    ['Features', '#features'],
-    ['About', '#about'],
-    ['Our Team', '#team'],
-    ['Contact', '#contact'],
+    { name: "Home", href: "#home" },
+    { name: "Features", href: "#features" },
+    { name: "About", href: "#about" },
+    { name: "Our Team", href: "#team" },
+    { name: "Contact", href: "#contact" },
   ];
 
-  return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-white/90 backdrop-blur-xl border-b border-purple-100">
-      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+  const closeMenu = () => setMenuOpen(false);
 
-        <a href="#home" className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 flex items-center justify-center text-white">
-            <Orbit size={25} />
+  return (
+    <header className="site-header">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+
+        {/* Logo */}
+        <a href="#home" onClick={closeMenu} className="flex items-center gap-2">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#3977B9] text-lg font-bold text-white">
+            P
           </div>
-          <span className="text-2xl font-extrabold tracking-tight text-[#17152F]">
-            Post<span className="text-violet-600">Orbit</span>
+          <span className="text-xl font-bold tracking-tight theme-text">
+            Post<span style={{ color: "var(--accent)" }}>Orbit</span>
           </span>
         </a>
 
-        <div className="hidden md:flex items-center gap-8">
-          {links.map(([label, href]) => (
-            <a
-              key={label}
-              href={href}
-              className="text-sm font-medium text-gray-600 hover:text-violet-600 transition"
-            >
-              {label}
+        {/* Desktop Navigation */}
+        <div className="hidden items-center gap-8 rounded-full border px-8 py-3 md:flex theme-card">
+          {links.map((link) => (
+            <a key={link.name} href={link.href} className="nav-link">
+              {link.name}
             </a>
           ))}
         </div>
 
-        <div className="hidden md:flex items-center gap-4">
+        {/* Right Actions */}
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="theme-toggle"
+            aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+            title={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+          >
+            {theme === "light" ? <MoonIcon /> : <SunIcon />}
+          </button>
+
           <Link
             to="/login"
-            className="font-semibold text-gray-700 hover:text-violet-600"
+            className="hidden rounded-full bg-[#202939] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3977B9] sm:inline-flex"
           >
             Login
           </Link>
-          <Link
-            to="/login"
-            className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-semibold shadow-lg shadow-violet-200 hover:scale-105 transition"
+
+          {/* Mobile Menu Button */}
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="rounded-lg p-2 theme-text md:hidden"
+            aria-label="Toggle navigation menu"
           >
-            Get Started
-          </Link>
+            {menuOpen ? <CloseIcon /> : <MenuIcon />}
+          </button>
         </div>
+      </nav>
 
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          className="md:hidden text-gray-800"
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? <X size={26} /> : <Menu size={26} />}
-        </button>
-      </div>
-
+      {/* Mobile Navigation */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-purple-100 px-6 py-5 flex flex-col gap-5">
-          {links.map(([label, href]) => (
-            <a
-              key={label}
-              href={href}
-              onClick={() => setMenuOpen(false)}
-              className="text-gray-700 font-medium"
+        <div className="border-t px-6 py-5 md:hidden theme-bg theme-border">
+          <div className="flex flex-col gap-5">
+            {links.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={closeMenu}
+                className="nav-link"
+              >
+                {link.name}
+              </a>
+            ))}
+
+            <Link
+              to="/login"
+              onClick={closeMenu}
+              className="primary-button w-full"
             >
-              {label}
-            </a>
-          ))}
-          <Link
-            to="/login"
-            onClick={() => setMenuOpen(false)}
-            className="bg-violet-600 text-white text-center rounded-xl py-3 font-semibold"
-          >
-            Login / Sign Up
-          </Link>
+              Login
+            </Link>
+          </div>
         </div>
       )}
-    </nav>
+    </header>
   );
 }
+
+export default Navbar;
