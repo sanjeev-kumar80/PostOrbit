@@ -37,6 +37,7 @@
 
 
 
+
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import Home from "./pages/Home";
@@ -44,6 +45,7 @@ import LoginSelection from "./pages/LoginSelection";
 import UserLogin from "./pages/UserLogin";
 import AdminLogin from "./pages/AdminLogin";
 import UserSignup from "./pages/UserSignup";
+import UserDashboard from "./pages/UserDashboard";
 
 function App() {
   return (
@@ -53,6 +55,7 @@ function App() {
       <Route path="/user-login" element={<UserLogin />} />
       <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/signup" element={<UserSignup />} />
+      <Route path="/dashboard" element={<UserDashboard />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
@@ -60,4 +63,3 @@ function App() {
 }
 
 export default App;
-
