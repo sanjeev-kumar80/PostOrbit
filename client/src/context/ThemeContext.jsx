@@ -5,7 +5,7 @@ const ThemeContext = createContext(null);
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("postorbit-theme") || "light";
+    return localStorage.getItem("postorbit-theme") || "dark";
   });
 
   useEffect(() => {

@@ -188,3 +188,309 @@ button {
   opacity: 0.12;
 }
 
+
+
+/* ==================================
+   LOGIN POPUP
+================================== */
+
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 75px 16px 24px;
+  overflow-y: auto;
+  background: rgba(10, 15, 25, 0.55);
+  backdrop-filter: blur(7px);
+  animation: overlayFade 0.25s ease;
+}
+
+.login-modal {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  padding: 35px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.25);
+  animation: modalSlide 0.35s ease;
+}
+
+.login-close {
+  position: absolute;
+  top: 15px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  font-size: 23px;
+  cursor: pointer;
+}
+
+.login-modal-icon {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 20px;
+  border-radius: 15px;
+  background: var(--accent);
+  color: white;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.login-eyebrow {
+  margin: 0;
+  text-align: center;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+}
+
+.login-modal h2 {
+  margin: 10px 0;
+  text-align: center;
+  font-size: 29px;
+  font-weight: 750;
+}
+
+.login-description {
+  margin: 0 0 25px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.login-role-card {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 13px;
+  margin-top: 13px;
+  padding: 17px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.login-role-card:hover {
+  border-color: var(--accent);
+  background: var(--bg-secondary);
+  transform: translateY(-2px);
+}
+
+.login-role-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  background: var(--surface-hover);
+  font-size: 19px;
+}
+
+.login-role-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.login-role-content strong {
+  font-size: 14px;
+}
+
+.login-role-content small {
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+
+.login-arrow {
+  color: var(--accent);
+  font-size: 21px;
+}
+
+.login-back {
+  display: block;
+  margin: 25px auto 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.login-back:hover {
+  color: var(--accent);
+}
+
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modalSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-25px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 480px) {
+  .login-modal {
+    padding: 28px 20px;
+  }
+}
+
+
+/* =====================================
+   GLOBAL DARK THEME OVERRIDES
+===================================== */
+
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-gray-50,
+[data-theme="dark"] .bg-gray-100,
+[data-theme="dark"] .bg-slate-50,
+[data-theme="dark"] .bg-slate-100 {
+  background-color: var(--bg-primary) !important;
+}
+
+[data-theme="dark"] .bg-gray-900,
+[data-theme="dark"] .bg-slate-900 {
+  background-color: var(--bg-secondary) !important;
+}
+
+[data-theme="dark"] .text-black,
+[data-theme="dark"] .text-gray-900,
+[data-theme="dark"] .text-gray-800,
+[data-theme="dark"] .text-slate-900,
+[data-theme="dark"] .text-slate-800 {
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .text-gray-700,
+[data-theme="dark"] .text-gray-600,
+[data-theme="dark"] .text-gray-500,
+[data-theme="dark"] .text-slate-600,
+[data-theme="dark"] .text-slate-500 {
+  color: var(--text-secondary) !important;
+}
+
+[data-theme="dark"] .border-gray-100,
+[data-theme="dark"] .border-gray-200,
+[data-theme="dark"] .border-slate-100,
+[data-theme="dark"] .border-slate-200 {
+  border-color: var(--border) !important;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: var(--text-secondary);
+}
+
+
+
+/* LIGHT THEME */
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  --bg-primary: #ffffff;
+  --bg-secondary: #f7f9fc;
+  --bg-card: #ffffff;
+  --text-primary: #172033;
+  --text-secondary: #64748b;
+  --border: #e2e8f0;
+  --accent: #397fca;
+  --surface-hover: #edf4fc;
+  --accent-gradient: linear-gradient(135deg, #397fca, #6b9fe8);
+}
+
+/* DARK THEME - DEFAULT */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-primary: #10141d;
+  --bg-secondary: #151b27;
+  --bg-card: #1b2432;
+  --text-primary: #f1f5fb;
+  --text-secondary: #a5b0c0;
+  --border: #2b3748;
+  --accent: #6da5f5;
+  --surface-hover: #222e40;
+  --accent-gradient: linear-gradient(135deg, #397fca, #6b9fe8);
+}
+
+/* Shared theme helpers */
+.theme-heading {
+  color: var(--text-primary);
+}
+
+.theme-muted {
+  color: var(--text-secondary);
+}
+
+.theme-accent {
+  color: var(--accent);
+}
+
+.theme-card {
+  background: var(--bg-card);
+  border-color: var(--border);
+  color: var(--text-primary);
+}
+
+.theme-card-hover:hover {
+  border-color: var(--accent);
+  box-shadow: 0 15px 40px rgba(70, 130, 210, 0.12);
+  transform: translateY(-4px);
+}
+
+.theme-icon-box {
+  background: var(--surface-hover);
+  color: var(--accent);
+}
+
+.theme-input {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--border);
+}
+
+.theme-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.theme-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(75, 135, 210, 0.15);
+}
+
+

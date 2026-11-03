@@ -92,22 +92,25 @@ function Navbar() {
             {theme === "light" ? <MoonIcon /> : <SunIcon />}
           </button>
 
-          <Link
-            to="/login"
+          <button
+            type="button"
+            onClick={openLoginModal}
             className="hidden rounded-full bg-[#202939] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3977B9] sm:inline-flex"
           >
             Login
-          </Link>
+          </button>
 
           {/* Mobile Menu Button */}
-          <button
+          {/* <button
             type="button"
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="rounded-lg p-2 theme-text md:hidden"
-            aria-label="Toggle navigation menu"
+            onClick={() => {
+              closeMenu();
+              openLoginModal();
+            }}
+            className="primary-button w-full"
           >
-            {menuOpen ? <CloseIcon /> : <MenuIcon />}
-          </button>
+            Login
+          </button> */}
         </div>
       </nav>
 

@@ -1,5 +1,6 @@
 
 import { Link } from "react-router-dom";
+import { useLoginModal } from "../context/LoginModalContext";
 
 function ArrowIcon() {
   return (
@@ -60,6 +61,8 @@ function CheckIcon() {
 }
 
 function Hero() {
+  const { openLoginModal } = useLoginModal();
+
   return (
     <section
       id="home"
@@ -139,13 +142,14 @@ function Hero() {
           </p>
 
           <div className="mt-9 flex flex-wrap justify-center gap-4">
-            <Link
-              to="/login"
+            <button
+              type="button"
+              onClick={openLoginModal}
               className="primary-button"
             >
               Get Started
               <ArrowIcon />
-            </Link>
+            </button>
 
             <a
               href="#features"
