@@ -1,19 +1,52 @@
 
+const Post = require("../models/Post");
+const SocialAccount = require("../models/SocialAccount");
+
 const getDashboardOverview = async (req, res) => {
   try {
-    const user = req.user;
+    const userId = req.user._id;
+
+    const [
+      totalPosts,
+      publishedPosts,
+      scheduledPosts,
+      draftPosts,
+      connectedAccounts,
+      recentPosts,
+    ] = await Promise.all([
+      Post.countDocuments({ user: userId }),
+      Post.countDocuments({ user: userId, status: "published" }),
+      Post.countDocuments({ user: userId, status: "scheduled" }),
+      Post.countDocuments({ user: userId, status: "draft" }),
+      SocialAccount.countDocuments({
+        user: userId,
+        isActive: true,
+      }),
+      Post.find({ user: userId })
+        .select("content platforms status scheduledAt publishedAt createdAt")
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+    ]);
 
     return res.status(200).json({
       success: true,
       message: "Dashboard data fetched successfully",
       data: {
         user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          createdAt: user.createdAt,
+          id: req.user._id,
+          name: req.user.name,
+          email: req.user.email,
+          role: req.user.role,
         },
+        stats: {
+          totalPosts,
+          publishedPosts,
+          scheduledPosts,
+          draftPosts,
+          connectedAccounts,
+        },
+        recentPosts,
       },
     });
   } catch (error) {
