@@ -9,6 +9,7 @@ const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const postRoutes = require("./routes/postRoutes");
+const socialAccountRoutes = require("./routes/socialAccountRoutes");
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/social-accounts", socialAccountRoutes);
 
 // Health check API
 app.get("/", (req, res) => {
