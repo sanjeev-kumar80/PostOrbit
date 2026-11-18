@@ -9,6 +9,7 @@ const GRAPH_VERSION = process.env.META_GRAPH_VERSION || "v25.0";
 
 // START META LOGIN
 
+
 const connectMeta = async (req, res) => {
   try {
     const state = jwt.sign(
@@ -34,9 +35,13 @@ const connectMeta = async (req, res) => {
       state,
     });
 
-    return res.redirect(
-      `https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth?${params}`
-    );
+    const authorizationUrl =
+      `https://www.facebook.com/${GRAPH_VERSION}/dialog/oauth?${params}`;
+
+    return res.status(200).json({
+      success: true,
+      authorizationUrl,
+    });
   } catch (error) {
     console.error("Meta Connect Error:", error.message);
 
@@ -46,6 +51,7 @@ const connectMeta = async (req, res) => {
     });
   }
 };
+
 
 
 // META OAUTH CALLBACK
