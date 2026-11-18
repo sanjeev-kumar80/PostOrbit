@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getDashboardOverview } from "../services/authService";
 
+import SocialAccounts from "../components/SocialAccounts";
+
 const navigation = [
   { label: "Overview", path: "/dashboard" },
   { label: "My Posts", path: "/my-posts" },
@@ -388,7 +390,10 @@ function UserDashboard() {
               </section>
 
               {/* Account Summary */}
-              <section
+
+              <SocialAccounts />
+              
+              {/* <section
                 className="mt-6 rounded-2xl p-6 md:p-8"
                 style={{
                   background: "var(--surface-hover)",
@@ -406,7 +411,7 @@ function UserDashboard() {
                 <p className="text-sm theme-muted mt-2">
                   Your connected social accounts will be managed here.
                 </p>
-              </section>
+              </section> */}
             </>
           )}
         </div>
