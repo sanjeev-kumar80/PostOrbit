@@ -64,18 +64,20 @@ const createPost = async (req, res) => {
     }
 
     const post = await Post.create({
-      user: req.user._id,
-      content: content.trim(),
-      platforms,
-      status,
-      scheduledAt: status === "scheduled" ? new Date(scheduledAt) : undefined,
-    });
+    user: req.user._id,
+    content: content.trim(),
+    platforms,
+    status,
+    scheduledAt: status === "scheduled" ? new Date(scheduledAt) : undefined,
 
-    return res.status(201).json({
-      success: true,
-      message: "Post created successfully",
-      data: post,
-    });
+    platformResults: platforms.map((platform) => ({
+      platform,
+      status: "pending",
+      platformPostId: null,
+      error: null,
+      publishedAt: null,
+    })),
+  });
   } catch (error) {
     console.error("Create Post Error:", error.message);
 
@@ -146,6 +148,14 @@ const updatePost = async (req, res) => {
         });
       }
       post.platforms = platforms;
+
+      post.platformResults = platforms.map((platform) => ({
+        platform,
+        status: "pending",
+        platformPostId: null,
+        error: null,
+        publishedAt: null,
+      }));
     }
 
     if (status !== undefined) {
