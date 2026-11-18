@@ -8,6 +8,7 @@ const { encryptToken } = require("../utils/tokenEncryption");
 const GRAPH_VERSION = process.env.META_GRAPH_VERSION || "v25.0";
 
 // START META LOGIN
+
 const connectMeta = async (req, res) => {
   try {
     const state = jwt.sign(
@@ -38,12 +39,14 @@ const connectMeta = async (req, res) => {
     );
   } catch (error) {
     console.error("Meta Connect Error:", error.message);
+
     return res.status(500).json({
       success: false,
       message: "Unable to start Meta connection",
     });
   }
 };
+
 
 // META OAUTH CALLBACK
 const metaCallback = async (req, res) => {
