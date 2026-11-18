@@ -3,10 +3,11 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function AdminLogin() {
+  // Keep the password hidden unless the user wants to see it.
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
+// Stop the form from refreshing while we're still using placeholder authentication.
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -121,6 +122,7 @@ export default function AdminLogin() {
 
                 <button
                   type="button"
+                  // Toggle between password and plain text.
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold theme-accent"
                 >
