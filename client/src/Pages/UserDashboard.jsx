@@ -1,34 +1,14 @@
 
-import {
-  LayoutDashboard,
-  FileText,
-  CalendarDays,
-  BarChart3,
-  Settings,
-  LogOut,
-  Plus,
-  Bell,
-  Search,
-  Clock3,
-  CheckCircle2,
-  Share2,
-  Sparkles,
-  Menu,
-  X,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { getDashboardOverview } from "../services/authService";
 
 const navigation = [
-  { label: "Overview", icon: LayoutDashboard },
-  { label: "My Posts", icon: FileText },
-  { label: "Calendar", icon: CalendarDays },
-  { label: "Analytics", icon: BarChart3 },
-  { label: "Settings", icon: Settings },
+  { label: "Overview", path: "/dashboard" },
+  { label: "My Posts", path: "/my-posts" },
+  { label: "Calendar", path: null },
+  { label: "Analytics", path: null },
+  { label: "Settings", path: null },
 ];
 
 function UserDashboard() {
@@ -48,11 +28,11 @@ function UserDashboard() {
       const data = await getDashboardOverview();
       setDashboard(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Unable to load dashboard");
 
       if (
-        err.message.toLowerCase().includes("token") ||
-        err.message.toLowerCase().includes("login")
+        err.message?.toLowerCase().includes("token") ||
+        err.message?.toLowerCase().includes("login")
       ) {
         localStorage.removeItem("postorbitToken");
         localStorage.removeItem("postorbitUser");
@@ -77,26 +57,10 @@ function UserDashboard() {
   const stats = dashboard?.stats;
 
   const statCards = [
-    {
-      label: "Total Posts",
-      value: stats?.totalPosts ?? 0,
-      icon: FileText,
-    },
-    {
-      label: "Published Posts",
-      value: stats?.publishedPosts ?? 0,
-      icon: CheckCircle2,
-    },
-    {
-      label: "Scheduled Posts",
-      value: stats?.scheduledPosts ?? 0,
-      icon: Clock3,
-    },
-    {
-      label: "Connected Accounts",
-      value: stats?.connectedAccounts ?? 0,
-      icon: Share2,
-    },
+    { label: "Total Posts", value: stats?.totalPosts ?? 0 },
+    { label: "Published Posts", value: stats?.publishedPosts ?? 0 },
+    { label: "Scheduled Posts", value: stats?.scheduledPosts ?? 0 },
+    { label: "Connected Accounts", value: stats?.connectedAccounts ?? 0 },
   ];
 
   const formatDate = (date) => {
@@ -130,7 +94,9 @@ function UserDashboard() {
       {/* Sidebar */}
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-50 w-64 border-r p-5 flex flex-col transition-transform duration-300 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          sidebarOpen
+            ? "translate-x-0"
+            : "-translate-x-full lg:translate-x-0"
         }`}
         style={{
           background: "var(--bg-card)",
@@ -139,14 +105,14 @@ function UserDashboard() {
       >
         <div className="flex items-center justify-between mb-10">
           <Link to="/" className="text-2xl font-bold theme-accent">
-            PostOrbit<span className="text-sm">.</span>
+            PostOrbit.
           </Link>
 
           <button
             className="lg:hidden theme-muted"
             onClick={() => setSidebarOpen(false)}
           >
-            <X size={22} />
+            Close
           </button>
         </div>
 
@@ -156,26 +122,40 @@ function UserDashboard() {
 
         <nav className="space-y-2">
           {navigation.map((item) => {
-            const Icon = item.icon;
             const active = activePage === item.label;
+
+            if (item.path) {
+              return (
+                <Link
+                  key={item.label}
+                  to={item.path}
+                  onClick={() => {
+                    setActivePage(item.label);
+                    setSidebarOpen(false);
+                  }}
+                  className="w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium"
+                  style={{
+                    background: active
+                      ? "var(--surface-hover)"
+                      : "transparent",
+                    color: active
+                      ? "var(--accent)"
+                      : "var(--text-secondary)",
+                  }}
+                >
+                  {item.label}
+                </Link>
+              );
+            }
 
             return (
               <button
                 key={item.label}
-                onClick={() => {
-                  setActivePage(item.label);
-                  setSidebarOpen(false);
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium"
-                style={{
-                  background: active ? "var(--surface-hover)" : "transparent",
-                  color: active
-                    ? "var(--accent)"
-                    : "var(--text-secondary)",
-                }}
+                disabled
+                className="w-full text-left px-4 py-3 rounded-xl text-sm opacity-50 cursor-not-allowed"
+                style={{ color: "var(--text-secondary)" }}
               >
-                <Icon size={19} />
-                {item.label}
+                {item.label} (Coming Soon)
               </button>
             );
           })}
@@ -186,26 +166,24 @@ function UserDashboard() {
             className="rounded-2xl p-4 mb-5"
             style={{ background: "var(--surface-hover)" }}
           >
-            <Sparkles size={21} className="theme-accent mb-3" />
             <h3 className="font-semibold text-sm theme-heading">
               AI Content Assistant
             </h3>
-            <p className="text-xs theme-muted mt-1">
+            <p className="text-xs theme-muted mt-2">
               AI content generation is coming soon.
             </p>
           </div>
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm theme-muted hover:theme-accent"
+            className="w-full text-left px-4 py-3 text-sm theme-muted"
           >
-            <LogOut size={19} />
             Logout
           </button>
 
           <Link
             to="/"
-            className="flex items-center gap-3 px-4 py-3 text-sm theme-muted"
+            className="block px-4 py-3 text-sm theme-muted"
           >
             Back to Website
           </Link>
@@ -226,7 +204,7 @@ function UserDashboard() {
               className="lg:hidden theme-muted"
               onClick={() => setSidebarOpen(true)}
             >
-              <Menu size={24} />
+              Menu
             </button>
 
             <div>
@@ -241,19 +219,14 @@ function UserDashboard() {
 
           <div className="flex items-center gap-4">
             <div
-              className="hidden md:flex items-center gap-2 rounded-xl px-3 py-2 border"
+              className="hidden md:flex items-center rounded-xl px-3 py-2 border"
               style={{ borderColor: "var(--border)" }}
             >
-              <Search size={17} className="theme-muted" />
               <input
                 placeholder="Search..."
                 className="bg-transparent outline-none text-sm w-28 theme-heading"
               />
             </div>
-
-            <button className="theme-muted" aria-label="Notifications">
-              <Bell size={21} />
-            </button>
 
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm"
@@ -270,18 +243,17 @@ function UserDashboard() {
         <div className="p-5 md:p-8 max-w-7xl mx-auto">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-32">
-              <Loader2 className="animate-spin theme-accent" size={36} />
-              <p className="theme-muted mt-4">Loading your dashboard...</p>
+              <p className="theme-muted">Loading your dashboard...</p>
             </div>
           ) : error ? (
             <div className="text-center py-24">
               <p className="text-red-500 mb-4">{error}</p>
+
               <button
                 onClick={fetchDashboard}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-white"
+                className="px-5 py-3 rounded-xl text-white"
                 style={{ background: "var(--accent-gradient)" }}
               >
-                <RefreshCw size={17} />
                 Try Again
               </button>
             </div>
@@ -291,59 +263,47 @@ function UserDashboard() {
               <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
                 <div>
                   <h2 className="text-2xl md:text-3xl font-bold theme-heading">
-                    Welcome back, {user?.name}! 👋
+                    Welcome back, {user?.name || "User"}!
                   </h2>
+
                   <p className="theme-muted mt-2">
                     Here's what's happening with your social accounts today.
                   </p>
-                  <p className="text-xs theme-muted mt-1">{user?.email}</p>
+
+                  <p className="text-xs theme-muted mt-1">
+                    {user?.email}
+                  </p>
                 </div>
 
-                <button
-                  onClick={() =>
-                    alert("Create Post feature will be added next.")
-                  }
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white font-semibold text-sm"
+                <Link
+                  to="/create-post"
+                  className="inline-flex items-center justify-center px-5 py-3 rounded-xl text-white font-semibold text-sm"
                   style={{ background: "var(--accent-gradient)" }}
                 >
-                  <Plus size={19} />
                   Create New Post
-                </button>
+                </Link>
               </section>
 
-              {/* Real Stats */}
+              {/* Statistics */}
               <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
-                {statCards.map((stat) => {
-                  const Icon = stat.icon;
+                {statCards.map((stat) => (
+                  <div
+                    key={stat.label}
+                    className="rounded-2xl border p-5"
+                    style={{
+                      background: "var(--bg-card)",
+                      borderColor: "var(--border)",
+                    }}
+                  >
+                    <p className="text-sm theme-muted mb-5">
+                      {stat.label}
+                    </p>
 
-                  return (
-                    <div
-                      key={stat.label}
-                      className="rounded-2xl border p-5"
-                      style={{
-                        background: "var(--bg-card)",
-                        borderColor: "var(--border)",
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-5">
-                        <p className="text-sm theme-muted">{stat.label}</p>
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center"
-                          style={{
-                            background: "var(--surface-hover)",
-                            color: "var(--accent)",
-                          }}
-                        >
-                          <Icon size={20} />
-                        </div>
-                      </div>
-
-                      <h3 className="text-3xl font-bold theme-heading">
-                        {stat.value}
-                      </h3>
-                    </div>
-                  );
-                })}
+                    <h3 className="text-3xl font-bold theme-heading">
+                      {stat.value}
+                    </h3>
+                  </div>
+                ))}
               </section>
 
               {/* Recent Posts */}
@@ -359,20 +319,21 @@ function UserDashboard() {
                     <h3 className="font-bold text-lg theme-heading">
                       Recent Posts
                     </h3>
+
                     <p className="text-sm theme-muted mt-1">
                       Your latest content
                     </p>
                   </div>
 
-                  <button
-                    onClick={() => setActivePage("My Posts")}
+                  <Link
+                    to="/my-posts"
                     className="text-sm font-semibold theme-accent"
                   >
                     View All
-                  </button>
+                  </Link>
                 </div>
 
-                {dashboard.recentPosts?.length > 0 ? (
+                {dashboard?.recentPosts?.length > 0 ? (
                   <div className="space-y-4">
                     {dashboard.recentPosts.map((post) => (
                       <div
@@ -384,6 +345,7 @@ function UserDashboard() {
                           <h4 className="font-semibold text-sm theme-heading">
                             {post.content}
                           </h4>
+
                           <p className="text-xs theme-muted mt-2">
                             {post.platforms?.length
                               ? post.platforms.join(", ")
@@ -393,7 +355,8 @@ function UserDashboard() {
                           </p>
                         </div>
 
-                        <span className="text-xs font-semibold px-3 py-1.5 rounded-full capitalize self-start"
+                        <span
+                          className="text-xs font-semibold px-3 py-1.5 rounded-full capitalize self-start"
                           style={{
                             background: "var(--surface-hover)",
                             color: "var(--accent)",
@@ -406,16 +369,20 @@ function UserDashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-12">
-                    <FileText
-                      size={35}
-                      className="theme-muted mx-auto mb-3"
-                    />
                     <h4 className="font-semibold theme-heading">
                       No posts yet
                     </h4>
+
                     <p className="text-sm theme-muted mt-2">
                       Your posts will appear here when you create them.
                     </p>
+
+                    <Link
+                      to="/create-post"
+                      className="inline-block mt-4 theme-accent font-semibold"
+                    >
+                      Create your first post
+                    </Link>
                   </div>
                 )}
               </section>
@@ -428,12 +395,9 @@ function UserDashboard() {
                   border: "1px solid var(--border)",
                 }}
               >
-                <div className="flex items-center gap-2 theme-accent mb-2">
-                  <Share2 size={19} />
-                  <span className="text-sm font-semibold">
-                    Social Account Summary
-                  </span>
-                </div>
+                <h3 className="text-sm font-semibold theme-accent mb-2">
+                  Social Account Summary
+                </h3>
 
                 <h3 className="text-xl font-bold theme-heading">
                   {stats?.connectedAccounts ?? 0} connected accounts

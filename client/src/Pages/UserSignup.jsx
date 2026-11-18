@@ -2,12 +2,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, UserPlus, ArrowLeft } from "lucide-react";
+import { registerUser } from "../services/authService";
 
 function UserSignup() {
   const navigate = useNavigate();
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -26,26 +29,45 @@ function UserSignup() {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (formData.password.length < 8) {
-      alert("Password must contain at least 8 characters.");
+      setError("Password must contain at least 8 characters.");
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Passwords do not match.");
+      setError("Passwords do not match.");
       return;
     }
 
     if (!formData.agree) {
-      alert("Please accept the Terms and Conditions.");
+      setError("Please accept the Terms and Conditions.");
       return;
     }
 
-    alert("Signup UI is working! Backend registration will be connected later.");
-    navigate("/user-login");
+    try {
+      setLoading(true);
+
+      const result = await registerUser({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+
+      localStorage.setItem("postorbitToken", result.token);
+      localStorage.setItem("postorbitUser", JSON.stringify(result.user));
+
+      navigate("/user-login", {
+        state: { message: "Account created successfully. Please login." },
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const inputClass =
@@ -195,21 +217,25 @@ function UserSignup() {
             </span>
           </label>
 
+          {error && (
+            <p className="text-sm text-red-500" role="alert">
+              {error}
+            </p>
+          )}
+
           <button
             type="submit"
-            className="w-full rounded-xl py-3 font-semibold text-white transition hover:opacity-90"
+            disabled={loading}
+            className="w-full rounded-xl py-3 font-semibold text-white transition hover:opacity-90 disabled:opacity-60"
             style={{ background: "var(--accent-gradient)" }}
           >
-            Create Account
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
         </form>
 
         <p className="text-center text-sm theme-muted mt-7">
           Already have an account?{" "}
-          <Link
-            to="/user-login"
-            className="font-semibold theme-accent"
-          >
+          <Link to="/user-login" className="font-semibold theme-accent">
             Login
           </Link>
         </p>

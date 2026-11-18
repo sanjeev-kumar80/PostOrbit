@@ -1,21 +1,46 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { loginUser } from "../services/authService";
 
 export default function UserLogin() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const successMessage = location.state?.message;
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
     if (!email.trim() || !password.trim()) {
-      alert("Please enter your email and password.");
+      setError("Please enter your email and password.");
       return;
     }
 
-    alert("User login UI is ready. Backend authentication will be connected next.");
+    try {
+      setLoading(true);
+
+      const result = await loginUser({
+        email: email.trim(),
+        password,
+      });
+
+      localStorage.setItem("postorbitToken", result.token);
+      localStorage.setItem("postorbitUser", JSON.stringify(result.user));
+
+      navigate("/dashboard");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -64,6 +89,12 @@ export default function UserLogin() {
             </p>
           </div>
 
+          {successMessage && (
+            <p className="mb-4 text-sm text-green-500" role="status">
+              {successMessage}
+            </p>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="mb-2 block text-sm font-semibold theme-heading">
@@ -88,7 +119,7 @@ export default function UserLogin() {
                 <button
                   type="button"
                   className="text-xs font-semibold theme-accent hover:underline"
-                  onClick={() => alert("Forgot password will be available after backend integration.")}
+                  onClick={() => alert("Forgot password feature is coming soon.")}
                 >
                   Forgot Password?
                 </button>
@@ -115,20 +146,19 @@ export default function UserLogin() {
               </div>
             </div>
 
-            <label className="flex cursor-pointer items-center gap-2 text-sm theme-muted">
-              <input
-                type="checkbox"
-                className="h-4 w-4 accent-blue-500"
-              />
-              Remember me
-            </label>
+            {error && (
+              <p className="text-sm text-red-500" role="alert">
+                {error}
+              </p>
+            )}
 
             <button
               type="submit"
-              className="w-full rounded-xl py-3.5 font-bold text-white transition hover:opacity-90"
+              disabled={loading}
+              className="w-full rounded-xl py-3.5 font-bold text-white transition hover:opacity-90 disabled:opacity-60"
               style={{ background: "var(--accent-gradient)" }}
             >
-              Sign In
+              {loading ? "Signing In..." : "Sign In"}
             </button>
           </form>
 
@@ -139,7 +169,15 @@ export default function UserLogin() {
 
           <p className="text-center text-sm theme-muted">
             Don't have an account?{" "}
-            <Link to="/login" className="font-semibold theme-accent hover:underline">
+            {/* <Link to="/signup" className="font-semibold theme-accent hover:underline">
+              Get Started
+            </Link> */}
+
+            <Link
+              to="/signup"
+              onClick={() => console.log("Navigating to Signup")}
+              className="font-semibold theme-accent hover:underline"
+            >
               Get Started
             </Link>
           </p>

@@ -130,7 +130,7 @@ function Navbar() {
             ))}
 
             <Link
-              to="/login"
+              to="/signup"
               onClick={closeMenu}
               className="primary-button w-full"
             >

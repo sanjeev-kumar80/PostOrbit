@@ -47,6 +47,9 @@ import AdminLogin from "./pages/AdminLogin";
 import UserSignup from "./pages/UserSignup";
 import UserDashboard from "./pages/UserDashboard";
 
+import CreatePost from "./Pages/CreatePost";
+import MyPosts from "./Pages/MyPosts";
+
 function App() {
   return (
     <Routes>
@@ -56,6 +59,8 @@ function App() {
       <Route path="/admin-login" element={<AdminLogin />} />
       <Route path="/signup" element={<UserSignup />} />
       <Route path="/dashboard" element={<UserDashboard />} />
+      <Route path="/create-post" element={<CreatePost />} />
+      <Route path="/my-posts" element={<MyPosts />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
