@@ -15,9 +15,13 @@ import {
   Sparkles,
   Menu,
   X,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
-import { useState } from "react";
-import { Link } from "react-router-dom";
+
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { getDashboardOverview } from "../services/authService";
 
 const navigation = [
   { label: "Overview", icon: LayoutDashboard },
@@ -27,62 +31,86 @@ const navigation = [
   { label: "Settings", icon: Settings },
 ];
 
-const stats = [
-  {
-    label: "Total Posts",
-    value: "120",
-    change: "+12% this month",
-    icon: FileText,
-  },
-  {
-    label: "Scheduled Posts",
-    value: "18",
-    change: "5 scheduled today",
-    icon: Clock3,
-  },
-  {
-    label: "Connected Accounts",
-    value: "4",
-    change: "All accounts connected",
-    icon: Share2,
-  },
-  {
-    label: "AI Credits",
-    value: "230",
-    change: "Available credits",
-    icon: Sparkles,
-  },
-];
-
-const recentPosts = [
-  {
-    title: "5 Tips to Grow Your Business Online",
-    platform: "Instagram",
-    status: "Published",
-    date: "Nov 04, 2026",
-  },
-  {
-    title: "Our New Product Launch 🚀",
-    platform: "LinkedIn",
-    status: "Scheduled",
-    date: "Nov 05, 2026",
-  },
-  {
-    title: "Weekend Special Offer",
-    platform: "Facebook",
-    status: "Draft",
-    date: "Nov 06, 2026",
-  },
-];
-
 function UserDashboard() {
   const [activePage, setActivePage] = useState("Overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [dashboard, setDashboard] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const handleNavigation = (label) => {
-    setActivePage(label);
-    setSidebarOpen(false);
+  const navigate = useNavigate();
+
+  const fetchDashboard = async () => {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await getDashboardOverview();
+      setDashboard(data);
+    } catch (err) {
+      setError(err.message);
+
+      if (
+        err.message.toLowerCase().includes("token") ||
+        err.message.toLowerCase().includes("login")
+      ) {
+        localStorage.removeItem("postorbitToken");
+        localStorage.removeItem("postorbitUser");
+        navigate("/user-login");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("postorbitToken");
+    localStorage.removeItem("postorbitUser");
+    navigate("/login");
+  };
+
+  const user = dashboard?.user;
+  const stats = dashboard?.stats;
+
+  const statCards = [
+    {
+      label: "Total Posts",
+      value: stats?.totalPosts ?? 0,
+      icon: FileText,
+    },
+    {
+      label: "Published Posts",
+      value: stats?.publishedPosts ?? 0,
+      icon: CheckCircle2,
+    },
+    {
+      label: "Scheduled Posts",
+      value: stats?.scheduledPosts ?? 0,
+      icon: Clock3,
+    },
+    {
+      label: "Connected Accounts",
+      value: stats?.connectedAccounts ?? 0,
+      icon: Share2,
+    },
+  ];
+
+  const formatDate = (date) => {
+    if (!date) return "Date unavailable";
+
+    return new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const getPostDate = (post) =>
+    post.publishedAt || post.scheduledAt || post.createdAt;
 
   return (
     <div
@@ -92,7 +120,6 @@ function UserDashboard() {
         color: "var(--text-primary)",
       }}
     >
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
@@ -118,7 +145,6 @@ function UserDashboard() {
           <button
             className="lg:hidden theme-muted"
             onClick={() => setSidebarOpen(false)}
-            aria-label="Close sidebar"
           >
             <X size={22} />
           </button>
@@ -136,8 +162,11 @@ function UserDashboard() {
             return (
               <button
                 key={item.label}
-                onClick={() => handleNavigation(item.label)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition"
+                onClick={() => {
+                  setActivePage(item.label);
+                  setSidebarOpen(false);
+                }}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium"
                 style={{
                   background: active ? "var(--surface-hover)" : "transparent",
                   color: active
@@ -159,32 +188,32 @@ function UserDashboard() {
           >
             <Sparkles size={21} className="theme-accent mb-3" />
             <h3 className="font-semibold text-sm theme-heading">
-              Need more AI credits?
+              AI Content Assistant
             </h3>
-            <p className="text-xs theme-muted mt-1 mb-3">
-              Upgrade your plan to create more content.
+            <p className="text-xs theme-muted mt-1">
+              AI content generation is coming soon.
             </p>
-            <button
-              className="text-sm font-semibold theme-accent"
-              onClick={() => alert("Plans will be available soon.")}
-            >
-              Explore Plans →
-            </button>
           </div>
+
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center gap-3 px-4 py-3 text-sm theme-muted hover:theme-accent"
+          >
+            <LogOut size={19} />
+            Logout
+          </button>
 
           <Link
             to="/"
-            className="flex items-center gap-3 px-4 py-3 text-sm theme-muted hover:theme-accent"
+            className="flex items-center gap-3 px-4 py-3 text-sm theme-muted"
           >
-            <LogOut size={19} />
             Back to Website
           </Link>
         </div>
       </aside>
 
-      {/* Main content */}
+      {/* Main */}
       <main className="flex-1 min-w-0">
-        {/* Topbar */}
         <header
           className="h-20 border-b px-5 md:px-8 flex items-center justify-between gap-4"
           style={{
@@ -196,7 +225,6 @@ function UserDashboard() {
             <button
               className="lg:hidden theme-muted"
               onClick={() => setSidebarOpen(true)}
-              aria-label="Open sidebar"
             >
               <Menu size={24} />
             </button>
@@ -211,8 +239,9 @@ function UserDashboard() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 md:gap-5">
-            <div className="hidden md:flex items-center gap-2 rounded-xl px-3 py-2 border"
+          <div className="flex items-center gap-4">
+            <div
+              className="hidden md:flex items-center gap-2 rounded-xl px-3 py-2 border"
               style={{ borderColor: "var(--border)" }}
             >
               <Search size={17} className="theme-muted" />
@@ -222,13 +251,8 @@ function UserDashboard() {
               />
             </div>
 
-            <button
-              className="relative theme-muted"
-              aria-label="Notifications"
-              onClick={() => alert("No new notifications.")}
-            >
+            <button className="theme-muted" aria-label="Notifications">
               <Bell size={21} />
-              <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-red-500" />
             </button>
 
             <div
@@ -238,223 +262,189 @@ function UserDashboard() {
                 color: "var(--accent)",
               }}
             >
-              S
+              {user?.name?.charAt(0)?.toUpperCase() || "U"}
             </div>
           </div>
         </header>
 
         <div className="p-5 md:p-8 max-w-7xl mx-auto">
-          {/* Welcome section */}
-          <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
-            <div>
-              <h2 className="text-2xl md:text-3xl font-bold theme-heading">
-                Welcome back, Sanjeev! 👋
-              </h2>
-              <p className="theme-muted mt-2">
-                Here's what's happening with your social accounts today.
-              </p>
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-32">
+              <Loader2 className="animate-spin theme-accent" size={36} />
+              <p className="theme-muted mt-4">Loading your dashboard...</p>
             </div>
-
-            <button
-              onClick={() => alert("Create Post page is our next feature.")}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white font-semibold text-sm hover:opacity-90"
-              style={{ background: "var(--accent-gradient)" }}
-            >
-              <Plus size={19} />
-              Create New Post
-            </button>
-          </section>
-
-          {/* Stats */}
-          <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
-            {stats.map((stat) => {
-              const Icon = stat.icon;
-
-              return (
-                <div
-                  key={stat.label}
-                  className="rounded-2xl border p-5"
-                  style={{
-                    background: "var(--bg-card)",
-                    borderColor: "var(--border)",
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-5">
-                    <p className="text-sm theme-muted">{stat.label}</p>
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
-                      style={{
-                        background: "var(--surface-hover)",
-                        color: "var(--accent)",
-                      }}
-                    >
-                      <Icon size={20} />
-                    </div>
-                  </div>
-
-                  <h3 className="text-3xl font-bold theme-heading">
-                    {stat.value}
-                  </h3>
-                  <p className="text-xs theme-muted mt-2">{stat.change}</p>
-                </div>
-              );
-            })}
-          </section>
-
-          {/* Main dashboard grid */}
-          <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Recent posts */}
-            <div
-              className="xl:col-span-2 rounded-2xl border p-5 md:p-6"
-              style={{
-                background: "var(--bg-card)",
-                borderColor: "var(--border)",
-              }}
-            >
-              <div className="flex items-center justify-between gap-3 mb-6">
+          ) : error ? (
+            <div className="text-center py-24">
+              <p className="text-red-500 mb-4">{error}</p>
+              <button
+                onClick={fetchDashboard}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-white"
+                style={{ background: "var(--accent-gradient)" }}
+              >
+                <RefreshCw size={17} />
+                Try Again
+              </button>
+            </div>
+          ) : (
+            <>
+              {/* Welcome */}
+              <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
                 <div>
-                  <h3 className="font-bold text-lg theme-heading">
-                    Recent Posts
-                  </h3>
-                  <p className="text-sm theme-muted mt-1">
-                    Track your latest content
+                  <h2 className="text-2xl md:text-3xl font-bold theme-heading">
+                    Welcome back, {user?.name}! 👋
+                  </h2>
+                  <p className="theme-muted mt-2">
+                    Here's what's happening with your social accounts today.
                   </p>
+                  <p className="text-xs theme-muted mt-1">{user?.email}</p>
                 </div>
 
                 <button
-                  onClick={() => handleNavigation("My Posts")}
-                  className="text-sm font-semibold theme-accent"
+                  onClick={() =>
+                    alert("Create Post feature will be added next.")
+                  }
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white font-semibold text-sm"
+                  style={{ background: "var(--accent-gradient)" }}
                 >
-                  View All
+                  <Plus size={19} />
+                  Create New Post
                 </button>
-              </div>
+              </section>
 
-              <div className="space-y-4">
-                {recentPosts.map((post) => (
-                  <div
-                    key={post.title}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 last:border-0 last:pb-0"
-                    style={{ borderColor: "var(--border)" }}
-                  >
-                    <div className="min-w-0">
-                      <h4 className="font-semibold text-sm theme-heading">
-                        {post.title}
-                      </h4>
-                      <p className="text-xs theme-muted mt-2">
-                        {post.platform} · {post.date}
-                      </p>
-                    </div>
+              {/* Real Stats */}
+              <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+                {statCards.map((stat) => {
+                  const Icon = stat.icon;
 
-                    <span
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full self-start sm:self-center"
-                      style={{
-                        background: "var(--surface-hover)",
-                        color:
-                          post.status === "Published"
-                            ? "#16a34a"
-                            : post.status === "Scheduled"
-                              ? "var(--accent)"
-                              : "var(--text-secondary)",
-                      }}
-                    >
-                      {post.status === "Published" ? (
-                        <CheckCircle2 size={13} />
-                      ) : (
-                        <Clock3 size={13} />
-                      )}
-                      {post.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Connected accounts */}
-            <div
-              className="rounded-2xl border p-5 md:p-6"
-              style={{
-                background: "var(--bg-card)",
-                borderColor: "var(--border)",
-              }}
-            >
-              <h3 className="font-bold text-lg theme-heading">
-                Connected Accounts
-              </h3>
-              <p className="text-sm theme-muted mt-1 mb-6">
-                Your social platforms
-              </p>
-
-              {[
-                { name: "Instagram", letter: "IG", color: "#d9468f" },
-                { name: "Facebook", letter: "f", color: "#3975d7" },
-                { name: "LinkedIn", letter: "in", color: "#0a80b9" },
-                { name: "X (Twitter)", letter: "X", color: "var(--text-primary)" },
-              ].map((account) => (
-                <div
-                  key={account.name}
-                  className="flex items-center justify-between py-3 border-b last:border-0"
-                  style={{ borderColor: "var(--border)" }}
-                >
-                  <div className="flex items-center gap-3">
+                  return (
                     <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm"
+                      key={stat.label}
+                      className="rounded-2xl border p-5"
                       style={{
-                        background: "var(--surface-hover)",
-                        color: account.color,
+                        background: "var(--bg-card)",
+                        borderColor: "var(--border)",
                       }}
                     >
-                      {account.letter}
+                      <div className="flex items-center justify-between mb-5">
+                        <p className="text-sm theme-muted">{stat.label}</p>
+                        <div
+                          className="w-10 h-10 rounded-xl flex items-center justify-center"
+                          style={{
+                            background: "var(--surface-hover)",
+                            color: "var(--accent)",
+                          }}
+                        >
+                          <Icon size={20} />
+                        </div>
+                      </div>
+
+                      <h3 className="text-3xl font-bold theme-heading">
+                        {stat.value}
+                      </h3>
                     </div>
-                    <span className="text-sm font-medium theme-heading">
-                      {account.name}
-                    </span>
+                  );
+                })}
+              </section>
+
+              {/* Recent Posts */}
+              <section
+                className="rounded-2xl border p-5 md:p-6"
+                style={{
+                  background: "var(--bg-card)",
+                  borderColor: "var(--border)",
+                }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="font-bold text-lg theme-heading">
+                      Recent Posts
+                    </h3>
+                    <p className="text-sm theme-muted mt-1">
+                      Your latest content
+                    </p>
                   </div>
 
-                  <span className="text-xs text-green-500 font-semibold">
-                    Connected
+                  <button
+                    onClick={() => setActivePage("My Posts")}
+                    className="text-sm font-semibold theme-accent"
+                  >
+                    View All
+                  </button>
+                </div>
+
+                {dashboard.recentPosts?.length > 0 ? (
+                  <div className="space-y-4">
+                    {dashboard.recentPosts.map((post) => (
+                      <div
+                        key={post._id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-4 last:border-0"
+                        style={{ borderColor: "var(--border)" }}
+                      >
+                        <div className="min-w-0">
+                          <h4 className="font-semibold text-sm theme-heading">
+                            {post.content}
+                          </h4>
+                          <p className="text-xs theme-muted mt-2">
+                            {post.platforms?.length
+                              ? post.platforms.join(", ")
+                              : "No platform selected"}
+                            {" · "}
+                            {formatDate(getPostDate(post))}
+                          </p>
+                        </div>
+
+                        <span className="text-xs font-semibold px-3 py-1.5 rounded-full capitalize self-start"
+                          style={{
+                            background: "var(--surface-hover)",
+                            color: "var(--accent)",
+                          }}
+                        >
+                          {post.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <FileText
+                      size={35}
+                      className="theme-muted mx-auto mb-3"
+                    />
+                    <h4 className="font-semibold theme-heading">
+                      No posts yet
+                    </h4>
+                    <p className="text-sm theme-muted mt-2">
+                      Your posts will appear here when you create them.
+                    </p>
+                  </div>
+                )}
+              </section>
+
+              {/* Account Summary */}
+              <section
+                className="mt-6 rounded-2xl p-6 md:p-8"
+                style={{
+                  background: "var(--surface-hover)",
+                  border: "1px solid var(--border)",
+                }}
+              >
+                <div className="flex items-center gap-2 theme-accent mb-2">
+                  <Share2 size={19} />
+                  <span className="text-sm font-semibold">
+                    Social Account Summary
                   </span>
                 </div>
-              ))}
 
-              <button
-                onClick={() => alert("Social account integration will be added later.")}
-                className="w-full mt-5 py-3 rounded-xl border text-sm font-semibold theme-accent hover:opacity-80"
-                style={{ borderColor: "var(--border)" }}
-              >
-                + Connect Account
-              </button>
-            </div>
-          </section>
+                <h3 className="text-xl font-bold theme-heading">
+                  {stats?.connectedAccounts ?? 0} connected accounts
+                </h3>
 
-          {/* Quick start */}
-          <section
-            className="mt-6 rounded-2xl p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-5"
-            style={{
-              background: "var(--surface-hover)",
-              border: "1px solid var(--border)",
-            }}
-          >
-            <div>
-              <div className="flex items-center gap-2 theme-accent mb-2">
-                <Sparkles size={19} />
-                <span className="text-sm font-semibold">AI Content Assistant</span>
-              </div>
-              <h3 className="text-xl font-bold theme-heading">
-                Create engaging content in seconds.
-              </h3>
-              <p className="text-sm theme-muted mt-2">
-                Generate captions and ideas with your AI-powered assistant.
-              </p>
-            </div>
-
-            <button
-              onClick={() => alert("AI Caption Generator will be our next feature.")}
-              className="shrink-0 px-5 py-3 rounded-xl text-white text-sm font-semibold"
-              style={{ background: "var(--accent-gradient)" }}
-            >
-              Try AI Assistant
-            </button>
-          </section>
+                <p className="text-sm theme-muted mt-2">
+                  Your connected social accounts will be managed here.
+                </p>
+              </section>
+            </>
+          )}
         </div>
       </main>
     </div>
