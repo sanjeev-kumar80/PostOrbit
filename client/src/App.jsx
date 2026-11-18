@@ -38,14 +38,41 @@
 
 
 
+// import { Routes, Route, Navigate } from "react-router-dom";
+
+// import Home from "./pages/Home";
+// import LoginSelection from "./pages/LoginSelection";
+// import UserLogin from "./pages/UserLogin";
+// import AdminLogin from "./pages/AdminLogin";
+// import UserSignup from "./pages/UserSignup";
+// import UserDashboard from "./pages/UserDashboard";
+
+// function App() {
+//   return (
+//     <Routes>
+//       <Route path="/" element={<Home />} />
+//       <Route path="/login" element={<LoginSelection />} />
+//       <Route path="/user-login" element={<UserLogin />} />
+//       <Route path="/admin-login" element={<AdminLogin />} />
+//       <Route path="/signup" element={<UserSignup />} />
+//       <Route path="/dashboard" element={<UserDashboard />} />
+
+//       <Route path="*" element={<Navigate to="/" replace />} />
+//     </Routes>
+//   );
+// }
+
+// export default App;
+
+
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Home from "./pages/Home";
-import LoginSelection from "./pages/LoginSelection";
-import UserLogin from "./pages/UserLogin";
-import AdminLogin from "./pages/AdminLogin";
-import UserSignup from "./pages/UserSignup";
-import UserDashboard from "./pages/UserDashboard";
+import Home from "./Pages/Home";
+import LoginSelection from "./Pages/LoginSelection";
+import UserLogin from "./Pages/UserLogin";
+import AdminLogin from "./Pages/AdminLogin";
+import UserSignup from "./Pages/UserSignup";
+import UserDashboard from "./Pages/UserDashboard";
 
 function App() {
   return (
@@ -57,9 +84,11 @@ function App() {
       <Route path="/signup" element={<UserSignup />} />
       <Route path="/dashboard" element={<UserDashboard />} />
 
+    
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }
 
 export default App;
+
