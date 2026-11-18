@@ -9,30 +9,63 @@ const socialAccountSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
+
     platform: {
       type: String,
       enum: ["instagram", "facebook", "linkedin"],
       required: true,
     },
-    accountName: {
+
+    platformUserId: {
       type: String,
       required: true,
       trim: true,
     },
-    platformAccountId: {
+
+    accountName: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    accessTokenEncrypted: {
       type: String,
       required: true,
+      select: false,
     },
+
+    refreshTokenEncrypted: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    tokenExpiresAt: {
+      type: Date,
+      default: null,
+    },
+
+    scopes: {
+      type: [String],
+      default: [],
+    },
+
     isActive: {
       type: Boolean,
       default: true,
+    },
+
+    connectedAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   { timestamps: true }
 );
 
+// Same platform account cannot be connected twice by the same user
 socialAccountSchema.index(
-  { user: 1, platform: 1, platformAccountId: 1 },
+  { user: 1, platform: 1, platformUserId: 1 },
   { unique: true }
 );
 
