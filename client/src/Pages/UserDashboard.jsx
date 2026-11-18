@@ -70,7 +70,8 @@ function UserDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("postorbitToken");
     localStorage.removeItem("postorbitUser");
-    navigate("/login");
+    // navigate("/login"); login page uses /user-login, so logging out should send users there.
+    navigate("/user-login");
   };
 
   const user = dashboard?.user;
