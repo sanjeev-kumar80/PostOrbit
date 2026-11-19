@@ -43,9 +43,11 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     const user = await User.create({
-      name,
-      email,
+      name: name.trim(),
+      email: email.toLowerCase().trim(),
       password: hashedPassword,
+      role: "USER",
+      isActive: true,
     });
 
     const token = generateToken(user._id);
@@ -92,10 +94,10 @@ const loginUser = async (req, res) => {
       });
     }
 
-    if (!user.isActive) {
+    if (user.isActive === false) {
       return res.status(403).json({
         success: false,
-        message: "Account is inactive",
+        message: "Account is inactive. Please contact support.",
       });
     }
 
