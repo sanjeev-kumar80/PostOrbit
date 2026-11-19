@@ -1,21 +1,23 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { adminLogin } from "../services/adminService";
 
 export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!email.trim() || !password.trim()) {
-      alert("Please enter your admin email and password.");
-      return;
-    }
-
-    alert("Admin login UI is ready. Backend authentication will be connected next.");
+    setLoading(true); setError("");
+    try { await adminLogin({ email, password }); navigate("/admin", { replace: true }); }
+    catch (err) { setError(err.message || "Unable to sign in"); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -79,6 +81,8 @@ export default function AdminLogin() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {location.state?.message && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{location.state.message}</p>}
+            {error && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
             <div>
               <label className="mb-2 block text-sm font-semibold theme-heading">
                 Admin Email
@@ -99,13 +103,6 @@ export default function AdminLogin() {
                 <label className="text-sm font-semibold theme-heading">
                   Password
                 </label>
-                <button
-                  type="button"
-                  className="text-xs font-semibold theme-accent hover:underline"
-                  onClick={() => alert("Password recovery will be available after backend integration.")}
-                >
-                  Forgot Password?
-                </button>
               </div>
 
               <div className="relative">
@@ -134,7 +131,7 @@ export default function AdminLogin() {
               className="w-full rounded-xl py-3.5 font-bold text-white transition hover:opacity-90"
               style={{ background: "var(--accent-gradient)" }}
             >
-              Admin Sign In
+              {loading ? "Signing in…" : "Admin Sign In"}
             </button>
           </form>
 
@@ -149,6 +146,7 @@ export default function AdminLogin() {
               User Login
             </Link>
           </p>
+          <p className="mt-3 text-center text-sm theme-muted">First setup? <Link to="/admin-register" className="font-semibold theme-accent hover:underline">Create the first admin</Link></p>
         </div>
 
         <p className="mt-6 text-center text-xs theme-muted">
