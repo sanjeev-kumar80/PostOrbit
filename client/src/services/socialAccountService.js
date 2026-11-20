@@ -11,9 +11,8 @@ const getToken = () => {
   return token;
 };
 
-export const connectMetaAccount = async () => {
-  const response = await fetch(`${API_URL}/meta/connect`, {
-    method: "GET",
+export const getBufferAccount = async () => {
+  const response = await fetch(`${API_URL}/buffer/account`, {
     headers: {
       Authorization: `Bearer ${getToken()}`,
     },
@@ -22,10 +21,10 @@ export const connectMetaAccount = async () => {
   const result = await response.json();
 
   if (!response.ok) {
-    throw new Error(result.message || "Unable to connect Meta");
+    throw new Error(result.message || "Unable to connect Buffer");
   }
 
-  window.location.assign(result.authorizationUrl);
+  return result;
 };
 
 export const getSocialAccounts = async () => {

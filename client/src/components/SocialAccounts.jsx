@@ -1,23 +1,25 @@
 
 import { useEffect, useState } from "react";
+
 import {
-  connectMetaAccount,
+  getBufferAccount,
   getSocialAccounts,
   disconnectSocialAccount,
 } from "../services/socialAccountService";
 
 const SocialAccounts = () => {
   const [accounts, setAccounts] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const loadAccounts = async () => {
     try {
       setLoading(true);
       const result = await getSocialAccounts();
       setAccounts(result.data || []);
-      setError("");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -29,13 +31,19 @@ const SocialAccounts = () => {
     loadAccounts();
   }, []);
 
-  const handleConnect = async () => {
+  const handleConnectBuffer = async () => {
     try {
       setConnecting(true);
       setError("");
-      await connectMetaAccount();
+      setSuccess("");
+
+      const result = await getBufferAccount();
+
+      setOrganizations(result.data?.organizations || []);
+      setSuccess("Buffer API connected successfully!");
     } catch (err) {
       setError(err.message);
+    } finally {
       setConnecting(false);
     }
   };
@@ -71,12 +79,12 @@ const SocialAccounts = () => {
         </div>
 
         <button
-          onClick={handleConnect}
+          onClick={handleConnectBuffer}
           disabled={connecting}
           className="rounded-lg px-4 py-2 text-sm font-medium text-white disabled:opacity-50"
           style={{ background: "var(--accent)" }}
         >
-          {connecting ? "Connecting..." : "Connect Meta Account"}
+          {connecting ? "Connecting..." : "Test Buffer Connection"}
         </button>
       </div>
 
@@ -84,14 +92,36 @@ const SocialAccounts = () => {
         <p className="text-sm text-red-500 mb-4">{error}</p>
       )}
 
+      {success && (
+        <p className="text-sm text-green-600 mb-4">{success}</p>
+      )}
+
+      {organizations.length > 0 && (
+        <div className="rounded-xl border p-4 mb-5"
+          style={{ borderColor: "var(--border)" }}>
+          <h3 className="font-semibold mb-3">Buffer Organizations</h3>
+
+          {organizations.map((org) => (
+            <div key={org.id} className="py-2">
+              <p className="font-medium">{org.name}</p>
+              <p className="text-xs opacity-60">ID: {org.id}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <h3 className="font-semibold mb-3">Previously Connected Social Accounts</h3>
+
       {loading ? (
         <p className="text-sm opacity-60">Loading accounts...</p>
       ) : accounts.length === 0 ? (
-        <div className="rounded-xl border border-dashed p-6 text-center"
-          style={{ borderColor: "var(--border)" }}>
-          <p className="font-medium">No accounts connected</p>
+        <div
+          className="rounded-xl border border-dashed p-6 text-center"
+          style={{ borderColor: "var(--border)" }}
+        >
+          <p className="font-medium">No social accounts connected</p>
           <p className="text-sm opacity-60 mt-1">
-            Connect your Facebook Page or Instagram Professional account.
+            Your existing Meta-connected accounts will appear here.
           </p>
         </div>
       ) : (
@@ -103,9 +133,7 @@ const SocialAccounts = () => {
               style={{ borderColor: "var(--border)" }}
             >
               <div>
-                <p className="font-medium capitalize">
-                  {account.platform}
-                </p>
+                <p className="font-medium capitalize">{account.platform}</p>
                 <p className="text-sm opacity-60">
                   {account.accountName || account.platformUserId}
                 </p>

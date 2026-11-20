@@ -12,6 +12,11 @@ const {
   metaCallback,
 } = require("../controllers/metaOAuthController");
 
+const {
+  fetchBufferAccount,
+  fetchBufferChannels,
+} = require("../controllers/bufferController");
+
 const { protect } = require("../middleware/authMiddleware");
 
 // Get connected accounts
@@ -19,6 +24,14 @@ router.get("/", protect, getMySocialAccounts);
 
 // Disconnect account
 router.delete("/:id", protect, disconnectSocialAccount);
+
+router.get("/buffer/account", protect, fetchBufferAccount);
+
+router.get(
+  "/buffer/channels/:organizationId",
+  protect,
+  fetchBufferChannels
+);
 
 // Meta OAuth
 router.get("/meta/connect", protect, connectMeta);

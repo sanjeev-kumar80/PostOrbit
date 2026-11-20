@@ -26,12 +26,9 @@ const connectMeta = async (req, res) => {
       redirect_uri: process.env.META_REDIRECT_URI,
       response_type: "code",
       scope: [
-        "pages_show_list",
-        "pages_read_engagement",
-        "pages_manage_posts",
-        "instagram_basic",
-        "instagram_content_publish",
-      ].join(","),
+  "public_profile",
+  "email"
+].join(","),
       state,
     });
 
