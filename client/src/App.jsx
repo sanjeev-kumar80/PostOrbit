@@ -51,6 +51,10 @@ import AdminLayout from "./Pages/AdminLayout";
 import AdminOverview from "./Pages/AdminOverview";
 import AdminSettings from "./Pages/AdminSettings";
 import AdminRegister from "./Pages/AdminRegister";
+import AdminUsers from "./Pages/AdminUsers";
+import AdminUserDetails from "./Pages/AdminUserDetails";
+import AdminSocialAccounts from "./Pages/AdminSocialAccounts";
+import AdminSocialAccountDetails from "./Pages/AdminSocialAccountDetails";
 
 import CreatePost from "./Pages/CreatePost";
 import MyPosts from "./Pages/MyPosts";
@@ -67,6 +71,10 @@ function App() {
       <Route element={<RequireAdmin />}>
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminOverview />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="users/:id" element={<AdminUserDetails />} />
+          <Route path="social-accounts" element={<AdminSocialAccounts />} />
+          <Route path="social-accounts/:id" element={<AdminSocialAccountDetails />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
       </Route>

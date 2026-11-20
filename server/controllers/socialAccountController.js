@@ -33,10 +33,11 @@ const disconnectSocialAccount = async (req, res) => {
   try {
     const { id } = req.params;
 
-    const account = await SocialAccount.findOneAndDelete({
+    const account = await SocialAccount.findOneAndUpdate({
       _id: id,
       user: req.user._id,
-    });
+      isActive: true,
+    }, { $set: { isActive: false }, $unset: { accessTokenEncrypted: "", refreshTokenEncrypted: "" } }, { new: true, runValidators: false });
 
     if (!account) {
       return res.status(404).json({

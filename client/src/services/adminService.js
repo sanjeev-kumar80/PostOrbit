@@ -1,5 +1,14 @@
+import axios from "axios";
+
 const API_URL = import.meta.env.DEV ? "/api" : (import.meta.env.VITE_API_URL || "/api");
 const TOKEN_KEY = "postorbitAdminToken";
+
+const adminApi = axios.create({ baseURL: API_URL });
+adminApi.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
 
 const parseResponse = async (response, fallback) => {
   const body = await response.text();
@@ -50,6 +59,12 @@ export const registerFirstAdmin = async (details) => {
 
 export const getAdminProfile = () => request("/admin/auth/me");
 export const getAdminOverview = () => request("/dashboard/admin/overview");
+export const getAdminUsers = (params) => adminApi.get("/admin/users", { params }).then((r) => r.data);
+export const getAdminUser = (id) => adminApi.get(`/admin/users/${id}`).then((r) => r.data);
+export const updateAdminUserStatus = (id, isActive) => adminApi.patch(`/admin/users/${id}/status`, { isActive }).then((r) => r.data);
+export const deleteAdminUser = (id) => adminApi.delete(`/admin/users/${id}`).then((r) => r.data);
+export const getAdminSocialAccounts = (params) => adminApi.get("/admin/social-accounts", { params }).then((r) => r.data);
+export const getAdminSocialAccount = (id) => adminApi.get(`/admin/social-accounts/${id}`).then((r) => r.data);
 export const changeAdminPassword = (data) => request("/admin/auth/password", { method: "PATCH", body: JSON.stringify(data) });
 export const adminLogout = async () => {
   try { await request("/admin/auth/logout", { method: "POST" }); } finally { localStorage.removeItem(TOKEN_KEY); }
