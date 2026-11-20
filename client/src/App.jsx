@@ -55,6 +55,8 @@ import AdminUsers from "./Pages/AdminUsers";
 import AdminUserDetails from "./Pages/AdminUserDetails";
 import AdminSocialAccounts from "./Pages/AdminSocialAccounts";
 import AdminSocialAccountDetails from "./Pages/AdminSocialAccountDetails";
+import AdminPosts, { ScheduledPosts } from "./Pages/AdminPosts";
+import AdminAnalytics from "./Pages/AdminAnalytics";
 
 import CreatePost from "./Pages/CreatePost";
 import MyPosts from "./Pages/MyPosts";
@@ -75,6 +77,9 @@ function App() {
           <Route path="users/:id" element={<AdminUserDetails />} />
           <Route path="social-accounts" element={<AdminSocialAccounts />} />
           <Route path="social-accounts/:id" element={<AdminSocialAccountDetails />} />
+          <Route path="posts" element={<AdminPosts />} />
+          <Route path="scheduled-posts" element={<ScheduledPosts />} />
+          <Route path="analytics" element={<AdminAnalytics />} />
           <Route path="settings" element={<AdminSettings />} />
         </Route>
       </Route>
