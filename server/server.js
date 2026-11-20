@@ -11,6 +11,7 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const postRoutes = require("./routes/postRoutes");
 const socialAccountRoutes = require("./routes/socialAccountRoutes");
 const adminAuthRoutes = require("./routes/adminAuthRoutes");
+const adminManagementRoutes = require("./routes/adminManagementRoutes");
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
+app.use("/api/admin", adminManagementRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/posts", postRoutes);
 app.use("/api/social-accounts", socialAccountRoutes);
