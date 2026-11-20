@@ -45,6 +45,7 @@ function CloseIcon() {
 function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoggedIn] = useState(() => Boolean(localStorage.getItem("postorbitToken")));
   const { openLoginModal } = useLoginModal();
 
   const links = [
@@ -92,13 +93,22 @@ function Navbar() {
             {theme === "light" ? <MoonIcon /> : <SunIcon />}
           </button>
 
-          <button
-            type="button"
-            onClick={openLoginModal}
-            className="hidden rounded-full bg-[#202939] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3977B9] sm:inline-flex"
-          >
-            Login
-          </button>
+          {isLoggedIn ? (
+            <Link
+              to="/dashboard"
+              className="hidden rounded-full bg-[#202939] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3977B9] sm:inline-flex"
+            >
+              Dashboard
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={openLoginModal}
+              className="hidden rounded-full bg-[#202939] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3977B9] sm:inline-flex"
+            >
+              Login
+            </button>
+          )}
 
           {/* Mobile Menu Button */}
           {/* <button
@@ -129,13 +139,23 @@ function Navbar() {
               </a>
             ))}
 
-            <Link
-              to="/signup"
-              onClick={closeMenu}
-              className="primary-button w-full"
-            >
-              Login
-            </Link>
+            {isLoggedIn ? (
+              <Link
+                to="/dashboard"
+                onClick={closeMenu}
+                className="primary-button w-full"
+              >
+                Dashboard
+              </Link>
+            ) : (
+              <Link
+                to="/signup"
+                onClick={closeMenu}
+                className="primary-button w-full"
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       )}
