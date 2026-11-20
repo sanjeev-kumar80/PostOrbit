@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { loginUser } from "../services/authService";
+import { loginUser, saveUserSession } from "../services/authService";
 
 export default function UserLogin() {
   const navigate = useNavigate();
@@ -32,8 +32,7 @@ export default function UserLogin() {
         password,
       });
 
-      localStorage.setItem("postorbitToken", result.token);
-      localStorage.setItem("postorbitUser", JSON.stringify(result.user));
+      saveUserSession(result.token, result.user);
 
       navigate("/dashboard");
     } catch (err) {

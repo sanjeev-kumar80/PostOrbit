@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getDashboardOverview } from "../services/authService";
+import { clearUserSession, getDashboardOverview } from "../services/authService";
 
 import SocialAccounts from "../components/SocialAccounts";
 
@@ -36,8 +36,7 @@ function UserDashboard() {
         err.message?.toLowerCase().includes("token") ||
         err.message?.toLowerCase().includes("login")
       ) {
-        localStorage.removeItem("postorbitToken");
-        localStorage.removeItem("postorbitUser");
+        clearUserSession();
         navigate("/user-login");
       }
     } finally {
@@ -50,8 +49,7 @@ function UserDashboard() {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("postorbitToken");
-    localStorage.removeItem("postorbitUser");
+    clearUserSession();
     navigate("/user-login");
   };
 

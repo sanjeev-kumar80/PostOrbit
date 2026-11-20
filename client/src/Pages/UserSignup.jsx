@@ -51,14 +51,11 @@ function UserSignup() {
     try {
       setLoading(true);
 
-      const result = await registerUser({
+      await registerUser({
         name: formData.name.trim(),
         email: formData.email.trim(),
         password: formData.password,
       });
-
-      localStorage.setItem("postorbitToken", result.token);
-      localStorage.setItem("postorbitUser", JSON.stringify(result.user));
 
       navigate("/user-login", {
         state: { message: "Account created successfully. Please login." },
