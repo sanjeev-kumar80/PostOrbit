@@ -65,6 +65,14 @@ export const updateAdminUserStatus = (id, isActive) => adminApi.patch(`/admin/us
 export const deleteAdminUser = (id) => adminApi.delete(`/admin/users/${id}`).then((r) => r.data);
 export const getAdminSocialAccounts = (params) => adminApi.get("/admin/social-accounts", { params }).then((r) => r.data);
 export const getAdminSocialAccount = (id) => adminApi.get(`/admin/social-accounts/${id}`).then((r) => r.data);
+export const getAdminPosts = (params) => adminApi.get("/admin/posts", { params }).then((r) => r.data);
+export const getAdminPost = (id) => adminApi.get(`/admin/posts/${id}`).then((r) => r.data);
+export const getAdminScheduledPosts = () => adminApi.get("/admin/posts/scheduled").then((r) => r.data);
+export const getAdminPublishingStats = () => adminApi.get("/admin/analytics/publishing").then((r) => r.data);
+export const getAdminMonthlyPosts = () => adminApi.get("/admin/analytics/monthly-posts").then((r) => r.data);
+export const getAdminUserGrowth = () => adminApi.get("/admin/analytics/user-growth").then((r) => r.data);
+export const getAdminPlatformDistribution = () => adminApi.get("/admin/analytics/platform-distribution").then((r) => r.data);
+export const getAdminAiUsage = () => adminApi.get("/admin/analytics/ai-usage").then((r) => r.data);
 export const changeAdminPassword = (data) => request("/admin/auth/password", { method: "PATCH", body: JSON.stringify(data) });
 export const adminLogout = async () => {
   try { await request("/admin/auth/logout", { method: "POST" }); } finally { localStorage.removeItem(TOKEN_KEY); }
