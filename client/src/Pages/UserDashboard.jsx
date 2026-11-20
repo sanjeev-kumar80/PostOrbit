@@ -8,7 +8,7 @@ import SocialAccounts from "../components/SocialAccounts";
 const navigation = [
   { label: "Overview", path: "/dashboard" },
   { label: "My Posts", path: "/my-posts" },
-  { label: "Calendar", path: null },
+  { label: "Calendar", path: "/calendar" },
   { label: "Analytics", path: null },
   { label: "Settings", path: null },
 ];
