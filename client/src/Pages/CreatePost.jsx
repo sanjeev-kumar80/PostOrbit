@@ -10,6 +10,12 @@ function CreatePost() {
   const [platforms, setPlatforms] = useState([]);
   const [status, setStatus] = useState("draft");
   const [scheduledAt, setScheduledAt] = useState("");
+  const [minimumScheduleTime] = useState(() => {
+    const now = new Date();
+    return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 16);
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -60,7 +66,6 @@ function CreatePost() {
           : null,
       });
 
-      alert("Post saved successfully!");
       navigate("/my-posts");
     } catch (err) {
       setError(err.message || "Unable to save post");
@@ -175,8 +180,7 @@ function CreatePost() {
                 type="datetime-local"
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                min={new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
-                  .toISOString().slice(0, 16)}
+                min={minimumScheduleTime}
                 className="w-full border rounded-xl p-3 bg-transparent"
                 style={{ borderColor: "var(--border)" }}
               />

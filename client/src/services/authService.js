@@ -2,6 +2,37 @@
 const API_BASE_URL = import.meta.env.DEV ? "/api" : (import.meta.env.VITE_API_URL || "/api");
 const API_URL = `${API_BASE_URL}/auth`;
 const DASHBOARD_API_URL = `${API_BASE_URL}/dashboard`;
+const USER_TOKEN_KEY = "postorbitToken";
+const USER_KEY = "postorbitUser";
+
+const notifyAuthChange = () => {
+  window.dispatchEvent(new Event("postorbit-auth-change"));
+};
+
+export const hasUserSession = () => Boolean(localStorage.getItem(USER_TOKEN_KEY));
+
+export const saveUserSession = (token, user) => {
+  localStorage.setItem(USER_TOKEN_KEY, token);
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+  notifyAuthChange();
+};
+
+export const clearUserSession = () => {
+  localStorage.removeItem(USER_TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  notifyAuthChange();
+};
+
+export const validateUserSession = async () => {
+  const token = localStorage.getItem(USER_TOKEN_KEY);
+  if (!token) return false;
+
+  const response = await fetch(`${API_URL}/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  await readResponse(response, "Unable to verify session");
+  return true;
+};
 
 const readResponse = async (response, fallback) => {
   const body = await response.text();

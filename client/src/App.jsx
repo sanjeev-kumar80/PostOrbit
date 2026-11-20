@@ -60,6 +60,7 @@ import AdminAnalytics from "./Pages/AdminAnalytics";
 
 import CreatePost from "./Pages/CreatePost";
 import MyPosts from "./Pages/MyPosts";
+import PostCalendar from "./Pages/PostCalendar";
 
 
 function App() {
@@ -87,6 +88,7 @@ function App() {
       <Route path="/dashboard" element={<UserDashboard />} />
       <Route path="/create-post" element={<CreatePost />} />
       <Route path="/my-posts" element={<MyPosts />} />
+      <Route path="/calendar" element={<PostCalendar />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
