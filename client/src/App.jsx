@@ -40,12 +40,17 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import Home from "./pages/Home";
-import LoginSelection from "./pages/LoginSelection";
-import UserLogin from "./pages/UserLogin";
-import AdminLogin from "./pages/AdminLogin";
-import UserSignup from "./pages/UserSignup";
-import UserDashboard from "./pages/UserDashboard";
+import Home from "./Pages/Home";
+import LoginSelection from "./Pages/LoginSelection";
+import UserLogin from "./Pages/UserLogin";
+import AdminLogin from "./Pages/AdminLogin";
+import UserSignup from "./Pages/UserSignup";
+import UserDashboard from "./Pages/UserDashboard";
+import RequireAdmin from "./Pages/RequireAdmin";
+import AdminLayout from "./Pages/AdminLayout";
+import AdminOverview from "./Pages/AdminOverview";
+import AdminSettings from "./Pages/AdminSettings";
+import AdminRegister from "./Pages/AdminRegister";
 
 import CreatePost from "./Pages/CreatePost";
 import MyPosts from "./Pages/MyPosts";
@@ -58,6 +63,13 @@ function App() {
       <Route path="/login" element={<LoginSelection />} />
       <Route path="/user-login" element={<UserLogin />} />
       <Route path="/admin-login" element={<AdminLogin />} />
+      <Route path="/admin-register" element={<AdminRegister />} />
+      <Route element={<RequireAdmin />}>
+        <Route path="/admin" element={<AdminLayout />}>
+          <Route index element={<AdminOverview />} />
+          <Route path="settings" element={<AdminSettings />} />
+        </Route>
+      </Route>
       <Route path="/signup" element={<UserSignup />} />
       <Route path="/dashboard" element={<UserDashboard />} />
       <Route path="/create-post" element={<CreatePost />} />

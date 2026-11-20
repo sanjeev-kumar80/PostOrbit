@@ -1,6 +1,25 @@
 
-const API_URL = "http://localhost:5000/api/auth";
-const DASHBOARD_API_URL = "http://localhost:5000/api/dashboard";
+const API_BASE_URL = import.meta.env.DEV ? "/api" : (import.meta.env.VITE_API_URL || "/api");
+const API_URL = `${API_BASE_URL}/auth`;
+const DASHBOARD_API_URL = `${API_BASE_URL}/dashboard`;
+
+const readResponse = async (response, fallback) => {
+  const body = await response.text();
+  let result;
+  try {
+    result = body ? JSON.parse(body) : {};
+  } catch {
+    throw new Error(`API returned a non-JSON response (HTTP ${response.status}). Check the server terminal.`);
+  }
+  if (!response.ok) {
+    const message = result.message || result.error || result.detail || result.msg;
+    if (message) throw new Error(message);
+    if (response.status === 403) throw new Error("This account is inactive or access was denied (HTTP 403).");
+    throw new Error(`${fallback} (HTTP ${response.status})`);
+  }
+  if (!body) throw new Error(`API returned an empty response (HTTP ${response.status}).`);
+  return result;
+};
 
 export const registerUser = async (data) => {
   const response = await fetch(`${API_URL}/register`, {
@@ -9,13 +28,7 @@ export const registerUser = async (data) => {
     body: JSON.stringify(data),
   });
 
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || "Registration failed");
-  }
-
-  return result;
+  return readResponse(response, "Registration failed");
 };
 
 export const loginUser = async (data) => {
@@ -25,13 +38,7 @@ export const loginUser = async (data) => {
     body: JSON.stringify(data),
   });
 
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || "Login failed");
-  }
-
-  return result;
+  return readResponse(response, "Login failed");
 };
 
 export const getDashboardOverview = async () => {
@@ -49,11 +56,7 @@ export const getDashboardOverview = async () => {
     },
   });
 
-  const result = await response.json();
-
-  if (!response.ok) {
-    throw new Error(result.message || "Unable to load dashboard");
-  }
+  const result = await readResponse(response, "Unable to load dashboard");
 
   return result.data;
 };

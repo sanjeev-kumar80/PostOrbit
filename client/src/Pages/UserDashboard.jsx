@@ -52,7 +52,7 @@ function UserDashboard() {
   const handleLogout = () => {
     localStorage.removeItem("postorbitToken");
     localStorage.removeItem("postorbitUser");
-    navigate("/login");
+    navigate("/user-login");
   };
 
   const user = dashboard?.user;
