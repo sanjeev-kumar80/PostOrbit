@@ -78,6 +78,12 @@ const createPost = async (req, res) => {
       publishedAt: null,
     })),
   });
+
+    return res.status(201).json({
+      success: true,
+      message: "Post created successfully",
+      data: post,
+    });
   } catch (error) {
     console.error("Create Post Error:", error.message);
 

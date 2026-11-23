@@ -1,8 +1,13 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext";
 import { useLoginModal } from "../context/LoginModalContext";
+import {
+  clearUserSession,
+  hasUserSession,
+  validateUserSession,
+} from "../services/authService";
 
 function SunIcon() {
   return (
@@ -45,7 +50,48 @@ function CloseIcon() {
 function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const { openLoginModal } = useLoginModal();
+
+  useEffect(() => {
+    let active = true;
+    let checkId = 0;
+
+    const syncSession = async () => {
+      const currentCheck = ++checkId;
+      if (!hasUserSession()) {
+        setIsLoggedIn(false);
+        setSessionChecked(true);
+        return;
+      }
+
+      setSessionChecked(false);
+      try {
+        await validateUserSession();
+        if (active && currentCheck === checkId) setIsLoggedIn(true);
+      } catch (error) {
+        if (!active || currentCheck !== checkId) return;
+
+        const authFailure = /invalid|expired|token|inactive|unauthorized/i.test(
+          error.message || ""
+        );
+        if (authFailure) clearUserSession();
+        setIsLoggedIn(!authFailure);
+      } finally {
+        if (active && currentCheck === checkId) setSessionChecked(true);
+      }
+    };
+
+    syncSession();
+    window.addEventListener("postorbit-auth-change", syncSession);
+    window.addEventListener("storage", syncSession);
+    return () => {
+      active = false;
+      window.removeEventListener("postorbit-auth-change", syncSession);
+      window.removeEventListener("storage", syncSession);
+    };
+  }, []);
 
   const links = [
     { name: "Home", href: "#home" },
@@ -92,13 +138,22 @@ function Navbar() {
             {theme === "light" ? <MoonIcon /> : <SunIcon />}
           </button>
 
-          <button
-            type="button"
-            onClick={openLoginModal}
-            className="hidden rounded-full bg-[#202939] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3977B9] sm:inline-flex"
-          >
-            Login
-          </button>
+          {sessionChecked && isLoggedIn ? (
+            <Link
+              to="/dashboard"
+              className="hidden rounded-full bg-[#202939] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3977B9] sm:inline-flex"
+            >
+              Dashboard
+            </Link>
+          ) : sessionChecked ? (
+            <button
+              type="button"
+              onClick={openLoginModal}
+              className="hidden rounded-full bg-[#202939] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#3977B9] sm:inline-flex"
+            >
+              Login
+            </button>
+          ) : null}
 
           {/* Mobile Menu Button */}
           {/* <button
@@ -129,13 +184,23 @@ function Navbar() {
               </a>
             ))}
 
-            <Link
-              to="/signup"
-              onClick={closeMenu}
-              className="primary-button w-full"
-            >
-              Login
-            </Link>
+            {sessionChecked && isLoggedIn ? (
+              <Link
+                to="/dashboard"
+                onClick={closeMenu}
+                className="primary-button w-full"
+              >
+                Dashboard
+              </Link>
+            ) : sessionChecked ? (
+              <Link
+                to="/signup"
+                onClick={closeMenu}
+                className="primary-button w-full"
+              >
+                Login
+              </Link>
+            ) : null}
           </div>
         </div>
       )}
