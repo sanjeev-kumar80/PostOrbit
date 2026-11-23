@@ -1,5 +1,6 @@
 
-const API_URL = "http://localhost:5000/api/posts";
+const API_BASE_URL = import.meta.env.DEV ? "/api" : (import.meta.env.VITE_API_URL || "/api");
+const API_URL = `${API_BASE_URL}/posts`;
 
 const getHeaders = () => {
   const token = localStorage.getItem("postorbitToken");

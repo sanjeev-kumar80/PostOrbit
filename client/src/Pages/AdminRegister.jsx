@@ -58,7 +58,7 @@ export default function AdminRegister() {
           <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
             <strong>One-time setup</strong>
             <p className="mt-1 text-xs">
-              Enter the <code className="bg-amber-100 px-1 rounded">ADMIN_SETUP_KEY</code> value from your server <code className="bg-amber-100 px-1 rounded">.env</code> file. Registration closes once an admin exists.
+              {DEV_HINT ? "A setup key is optional in local development." : <>Enter the <code className="bg-amber-100 px-1 rounded">ADMIN_SETUP_KEY</code> value from your server <code className="bg-amber-100 px-1 rounded">.env</code> file.</>} Registration closes once an admin exists.
             </p>
           </div>
 
@@ -95,7 +95,7 @@ export default function AdminRegister() {
               </label>
               <div className="relative">
                 <input
-                  required
+                  required={!DEV_HINT}
                   type={showKey ? "text" : "password"}
                   autoComplete="off"
                   value={form.setupKey}

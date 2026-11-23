@@ -1,5 +1,4 @@
 
-import { Link } from "react-router-dom";
 import { useLoginModal } from "../context/LoginModalContext";
 
 function ArrowIcon() {

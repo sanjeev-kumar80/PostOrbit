@@ -174,7 +174,6 @@ export default function UserLogin() {
 
             <Link
               to="/signup"
-              onClick={() => console.log("Navigating to Signup")}
               className="font-semibold theme-accent hover:underline"
             >
               Get Started

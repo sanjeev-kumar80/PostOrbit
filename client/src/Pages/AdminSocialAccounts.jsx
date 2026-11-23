@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { RefreshCw, Share2, ExternalLink } from "lucide-react";
 import { getAdminSocialAccounts } from "../services/adminService";
@@ -6,8 +6,8 @@ import { getAdminSocialAccounts } from "../services/adminService";
 const platforms = { instagram: "Instagram", facebook: "Facebook", linkedin: "LinkedIn", x: "X (Twitter)" };
 export default function AdminSocialAccounts() {
   const [accounts,setAccounts]=useState([]); const [status,setStatus]=useState(""); const [platform,setPlatform]=useState(""); const [loading,setLoading]=useState(true); const [error,setError]=useState("");
-  const load=async()=>{setLoading(true);setError("");try{const result=await getAdminSocialAccounts({status,platform});setAccounts(result.data);}catch(e){setError(e.response?.data?.message||"Unable to load social accounts");}finally{setLoading(false);}};
-  useEffect(()=>{load();},[status,platform]);
+  const load=useCallback(async()=>{setLoading(true);setError("");try{const result=await getAdminSocialAccounts({status,platform});setAccounts(result.data);}catch(e){setError(e.response?.data?.message||"Unable to load social accounts");}finally{setLoading(false);}},[status,platform]);
+  useEffect(()=>{load();},[load]);
   return <div className="space-y-6"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-sm font-semibold text-indigo-600">CONNECTIONS</p><h1 className="mt-1 text-3xl font-bold tracking-tight">Social accounts</h1><p className="mt-2 text-sm text-slate-500">Connection records linked to PostOrbit users.</p></div><button onClick={load} disabled={loading} className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"><RefreshCw size={15} className="mr-2 inline"/>Refresh</button></div>
     <div className="flex flex-wrap gap-3 rounded-2xl border border-slate-200 bg-white p-4"><label className="text-sm text-slate-500"><span className="sr-only">Connection status</span><select value={status} onChange={e=>setStatus(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5"><option value="">All statuses</option><option value="active">Connected</option><option value="inactive">Disconnected</option></select></label><label className="text-sm text-slate-500"><span className="sr-only">Platform</span><select value={platform} onChange={e=>setPlatform(e.target.value)} className="rounded-xl border border-slate-200 bg-white px-3 py-2.5"><option value="">All platforms</option>{Object.entries(platforms).map(([key,name])=><option key={key} value={key}>{name}</option>)}</select></label><span className="ml-auto self-center text-sm text-slate-500">{accounts.length} records</span></div>
     {error&&<div role="alert" className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}<button onClick={load} className="ml-3 font-semibold underline">Retry</button></div>}

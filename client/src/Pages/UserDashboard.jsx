@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { clearUserSession, getDashboardOverview } from "../services/authService";
 
@@ -22,7 +22,7 @@ function UserDashboard() {
 
   const navigate = useNavigate();
 
-  const fetchDashboard = async () => {
+  const fetchDashboard = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
@@ -42,11 +42,11 @@ function UserDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchDashboard();
-  }, []);
+  }, [fetchDashboard]);
 
   const handleLogout = () => {
     clearUserSession();

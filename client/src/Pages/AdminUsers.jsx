@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Search, RefreshCw, ChevronLeft, ChevronRight, Users } from "lucide-react";
 import { deleteAdminUser, getAdminUsers, updateAdminUserStatus } from "../services/adminService";
@@ -10,8 +10,8 @@ export default function AdminUsers() {
   const [users, setUsers] = useState([]); const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
   const [searchInput, setSearchInput] = useState(""); const [search, setSearch] = useState(""); const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true); const [error, setError] = useState(""); const [busyId, setBusyId] = useState("");
-  const load = async (page = 1) => { setLoading(true); setError(""); try { const result = await getAdminUsers({ page, limit: 10, search, status }); setUsers(result.data); setPagination(result.pagination); } catch (e) { setError(e.response?.data?.message || "Unable to load users"); } finally { setLoading(false); } };
-  useEffect(() => { load(1); }, [search, status]);
+  const load = useCallback(async (page = 1) => { setLoading(true); setError(""); try { const result = await getAdminUsers({ page, limit: 10, search, status }); setUsers(result.data); setPagination(result.pagination); } catch (e) { setError(e.response?.data?.message || "Unable to load users"); } finally { setLoading(false); } }, [search, status]);
+  useEffect(() => { load(1); }, [load]);
   const toggleStatus = async (user) => { setBusyId(user._id); setError(""); try { await updateAdminUserStatus(user._id, !user.isActive); await load(pagination.page); } catch (e) { setError(e.response?.data?.message || "Unable to update status"); } finally { setBusyId(""); } };
   const removeUser = async (user) => { if (!window.confirm(`Delete ${user.name} and all their posts and connected social account records? This cannot be undone.`)) return; setBusyId(user._id); setError(""); try { await deleteAdminUser(user._id); await load(Math.min(pagination.page, Math.max(1, pagination.pages - (users.length === 1 ? 1 : 0)))); } catch (e) { setError(e.response?.data?.message || "Unable to delete user"); } finally { setBusyId(""); } };
   const submitSearch = (e) => { e.preventDefault(); setSearch(searchInput.trim()); };
