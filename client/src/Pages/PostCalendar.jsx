@@ -97,8 +97,7 @@ function DayCell({ day, year, month, posts, isToday, isSelected, onClick }) {
 }
 
 // ─── Day Detail Panel ─────────────────────────────────────────────────────────
-function DayDetail({ day, month, year, posts, onClose }) {
-  const date = new Date(year, month, day);
+function DayDetail({ date, posts, onClose, onEdit }) {
   const dayPosts = posts.filter((p) => isSameDay(new Date(getPostDate(p)), date));
 
   const label = date.toLocaleDateString("en-IN", {
@@ -165,6 +164,7 @@ function DayDetail({ day, month, year, posts, onClose }) {
                   <PlatformIcon key={p} platform={p} />
                 ))}
               </div>
+              {post.status === "scheduled" || post.status === "draft" ? <button onClick={onEdit} className="text-xs font-semibold theme-accent mt-2">Manage in My Posts</button> : null}
             </div>
           ))}
         </div>
@@ -183,6 +183,9 @@ function PostCalendar() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedDay, setSelectedDay] = useState(null);
+  const [view, setView] = useState("month");
+  const [weekAnchor, setWeekAnchor] = useState(today);
+  const [platformFilter, setPlatformFilter] = useState("all");
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -205,21 +208,26 @@ function PostCalendar() {
 
   const daysInMonth = getDaysInMonth(year, month);
   const firstDay = getFirstDayOfWeek(year, month);
+  const filteredPosts = posts.filter((post) => platformFilter === "all" || (post.platforms || []).includes(platformFilter));
+  const weekStart = new Date(weekAnchor.getFullYear(), weekAnchor.getMonth(), weekAnchor.getDate() - weekAnchor.getDay());
+  const weekDates = Array.from({ length: 7 }, (_, index) => new Date(weekStart.getFullYear(), weekStart.getMonth(), weekStart.getDate() + index));
 
   const prevMonth = () => {
+    if (view === "week") { setWeekAnchor((date) => new Date(date.getFullYear(), date.getMonth(), date.getDate() - 7)); setSelectedDay(null); return; }
     if (month === 0) { setMonth(11); setYear((y) => y - 1); }
     else setMonth((m) => m - 1);
     setSelectedDay(null);
   };
 
   const nextMonth = () => {
+    if (view === "week") { setWeekAnchor((date) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + 7)); setSelectedDay(null); return; }
     if (month === 11) { setMonth(0); setYear((y) => y + 1); }
     else setMonth((m) => m + 1);
     setSelectedDay(null);
   };
 
   // Upcoming scheduled posts (sorted)
-  const upcoming = posts
+  const upcoming = filteredPosts
     .filter((p) => p.status === "scheduled" && new Date(p.scheduledAt) > today)
     .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt))
     .slice(0, 6);
@@ -268,7 +276,7 @@ function PostCalendar() {
               style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}
             >
               {/* Month nav */}
-              <div className="flex items-center justify-between mb-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
                 <button
                   onClick={prevMonth}
                   className="w-9 h-9 rounded-xl flex items-center justify-center theme-muted transition-all hover:opacity-70"
@@ -276,9 +284,7 @@ function PostCalendar() {
                 >
                   ‹
                 </button>
-                <h2 className="text-lg font-bold theme-heading">
-                  {MONTHS[month]} {year}
-                </h2>
+                <div className="text-center"><h2 className="text-lg font-bold theme-heading">{view === "month" ? `${MONTHS[month]} ${year}` : `${weekDates[0].toLocaleDateString("en-IN", { day: "numeric", month: "short" })} – ${weekDates[6].toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`}</h2><div className="flex items-center justify-center gap-2 mt-2"><button onClick={() => setView("month")} className="text-xs px-2 py-1 rounded-lg" style={{ background: view === "month" ? "var(--surface-hover)" : "transparent" }}>Month</button><button onClick={() => setView("week")} className="text-xs px-2 py-1 rounded-lg" style={{ background: view === "week" ? "var(--surface-hover)" : "transparent" }}>Week</button><select aria-label="Filter by platform" value={platformFilter} onChange={(event) => setPlatformFilter(event.target.value)} className="text-xs border rounded-lg px-2 py-1 bg-transparent" style={{ borderColor: "var(--border)" }}><option value="all">All platforms</option><option value="instagram">Instagram</option><option value="facebook">Facebook</option><option value="linkedin">LinkedIn</option></select></div></div>
                 <button
                   onClick={nextMonth}
                   className="w-9 h-9 rounded-xl flex items-center justify-center theme-muted transition-all hover:opacity-70"
@@ -300,20 +306,20 @@ function PostCalendar() {
               {/* Grid */}
               <div className="grid grid-cols-7 gap-1">
                 {/* Empty cells before first day */}
-                {Array.from({ length: firstDay }).map((_, i) => (
+                {view === "month" && Array.from({ length: firstDay }).map((_, i) => (
                   <div key={`empty-${i}`} />
                 ))}
                 {/* Day cells */}
-                {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
+                {(view === "month" ? Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1)) : weekDates).map((date) => (
                   <DayCell
-                    key={day}
-                    day={day}
-                    year={year}
-                    month={month}
-                    posts={posts}
-                    isToday={isSameDay(new Date(year, month, day), today)}
-                    isSelected={selectedDay === day}
-                    onClick={(d) => setSelectedDay(selectedDay === d ? null : d)}
+                    key={date.toISOString()}
+                    day={date.getDate()}
+                    year={date.getFullYear()}
+                    month={date.getMonth()}
+                    posts={filteredPosts}
+                    isToday={isSameDay(date, today)}
+                    isSelected={selectedDay && isSameDay(selectedDay, date)}
+                    onClick={() => setSelectedDay(selectedDay && isSameDay(selectedDay, date) ? null : date)}
                   />
                 ))}
               </div>
@@ -334,11 +340,10 @@ function PostCalendar() {
               {/* Day detail OR upcoming */}
               {selectedDay ? (
                 <DayDetail
-                  day={selectedDay}
-                  month={month}
-                  year={year}
-                  posts={posts}
+                  date={selectedDay}
+                  posts={filteredPosts}
                   onClose={() => setSelectedDay(null)}
+                  onEdit={() => navigate("/my-posts")}
                 />
               ) : (
                 <div
