@@ -1,5 +1,6 @@
 
 const SocialAccount = require("../models/SocialAccount");
+const { createNotification } = require("../services/notificationService");
 
 // GET CONNECTED SOCIAL ACCOUNTS
 const getMySocialAccounts = async (req, res) => {
@@ -45,6 +46,8 @@ const disconnectSocialAccount = async (req, res) => {
         message: "Social account not found",
       });
     }
+
+    await createNotification(req.user._id, "disconnected", "Social account disconnected", `${account.platform} account was disconnected.`);
 
     return res.status(200).json({
       success: true,
