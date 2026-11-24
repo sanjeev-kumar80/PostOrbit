@@ -4,12 +4,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { clearUserSession, getDashboardOverview } from "../services/authService";
 
 import SocialAccounts from "../components/SocialAccounts";
+import { getNotifications, markAllNotificationsRead } from "../services/postService";
 
 const navigation = [
   { label: "Overview", path: "/dashboard" },
   { label: "My Posts", path: "/my-posts" },
   { label: "Calendar", path: "/calendar" },
-  { label: "Analytics", path: null },
+  { label: "Analytics", path: "/analytics" },
   { label: "Settings", path: null },
 ];
 
@@ -19,6 +20,8 @@ function UserDashboard() {
   const [dashboard, setDashboard] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [notifications, setNotifications] = useState([]);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const navigate = useNavigate();
 
@@ -48,6 +51,8 @@ function UserDashboard() {
     fetchDashboard();
   }, [fetchDashboard]);
 
+  useEffect(() => { getNotifications().then((result) => { setNotifications(result.data || []); setUnreadNotifications(result.unread || 0); }).catch(() => {}); }, []);
+
   const handleLogout = () => {
     clearUserSession();
     navigate("/user-login");
@@ -61,12 +66,15 @@ function UserDashboard() {
     { label: "Published Posts", value: stats?.publishedPosts ?? 0 },
     { label: "Scheduled Posts", value: stats?.scheduledPosts ?? 0 },
     { label: "Connected Accounts", value: stats?.connectedAccounts ?? 0 },
+  { label: "Draft Posts", value: stats?.draftPosts ?? 0 },
+  { label: "Failed Posts", value: stats?.failedPosts ?? 0 },
   ];
 
   const formatDate = (date) => {
     if (!date) return "Date unavailable";
 
     return new Date(date).toLocaleDateString("en-IN", {
+      timeZone: "Asia/Kolkata",
       day: "2-digit",
       month: "short",
       year: "numeric",
@@ -75,6 +83,10 @@ function UserDashboard() {
 
   const getPostDate = (post) =>
     post.publishedAt || post.scheduledAt || post.createdAt;
+
+  const formatDateTimeIST = (date) => date ? new Date(date).toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata", day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
+  }) : "Date unavailable";
 
   return (
     <div
@@ -149,14 +161,7 @@ function UserDashboard() {
             }
 
             return (
-              <button
-                key={item.label}
-                disabled
-                className="w-full text-left px-4 py-3 rounded-xl text-sm opacity-50 cursor-not-allowed"
-                style={{ color: "var(--text-secondary)" }}
-              >
-                {item.label} (Coming Soon)
-              </button>
+              <Link key={item.label} to={item.path} onClick={() => { setActivePage(item.label); setSidebarOpen(false); }} className="w-full flex items-center px-4 py-3 rounded-xl text-sm font-medium" style={{ color: "var(--text-secondary)" }}>{item.label}</Link>
             );
           })}
         </nav>
@@ -170,7 +175,7 @@ function UserDashboard() {
               AI Content Assistant
             </h3>
             <p className="text-xs theme-muted mt-2">
-              AI content generation is coming soon.
+              Generate and rewrite captions from the Create Post page.
             </p>
           </div>
 
@@ -259,6 +264,7 @@ function UserDashboard() {
             </div>
           ) : (
             <>
+              {!!notifications.length && <section className="rounded-2xl border p-5 mb-6" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}><div className="flex items-center justify-between gap-3"><h2 className="font-bold theme-heading">Notifications {unreadNotifications > 0 && <span className="text-xs theme-accent">({unreadNotifications} new)</span>}</h2><button type="button" onClick={() => markAllNotificationsRead().then(() => { setUnreadNotifications(0); setNotifications((items) => items.map((item) => ({ ...item, readAt: new Date().toISOString() }))); })} className="text-xs theme-accent">Mark all read</button></div><div className="mt-3 space-y-2">{notifications.slice(0, 4).map((item) => <div key={item._id} className="flex justify-between gap-4 rounded-xl px-3 py-2" style={{ background: item.readAt ? "transparent" : "var(--surface-hover)" }}><div><p className="text-sm font-medium theme-heading">{item.title}</p><p className="text-xs theme-muted mt-0.5">{item.message}</p></div><time className="text-[10px] theme-muted whitespace-nowrap">{formatDateTimeIST(item.createdAt)}</time></div>)}</div></section>}
               {/* Welcome */}
               <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-5 mb-8">
                 <div>
@@ -282,10 +288,11 @@ function UserDashboard() {
                 >
                   Create New Post
                 </Link>
+                <Link to="/dashboard#social-accounts" className="inline-flex items-center justify-center px-5 py-3 rounded-xl border font-semibold text-sm" style={{ borderColor: "var(--border)", color: "var(--accent)" }}>Connect Social Account</Link>
               </section>
 
               {/* Statistics */}
-              <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5 mb-8">
+              <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5 mb-8">
                 {statCards.map((stat) => (
                   <div
                     key={stat.label}
@@ -304,6 +311,17 @@ function UserDashboard() {
                     </h3>
                   </div>
                 ))}
+              </section>
+
+              <section className="grid lg:grid-cols-2 gap-5 mb-8">
+                <div className="rounded-2xl border p-5" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+                  <div className="flex items-center justify-between mb-4"><div><h3 className="font-bold theme-heading">Upcoming Scheduled Posts</h3><p className="text-sm theme-muted mt-1">Next posts waiting in Buffer</p></div><Link to="/calendar" className="text-sm font-semibold theme-accent">Calendar</Link></div>
+                  {dashboard?.upcomingPosts?.length ? <div className="space-y-3">{dashboard.upcomingPosts.map((post) => <div key={post._id} className="flex items-start justify-between gap-3 border-t pt-3" style={{ borderColor: "var(--border)" }}><div className="min-w-0"><p className="text-sm font-medium theme-heading truncate">{post.content}</p><p className="text-xs theme-muted mt-1">{post.platforms?.join(", ") || "Buffer"}</p></div><time className="text-xs theme-accent shrink-0">{formatDateTimeIST(post.scheduledAt)} IST</time></div>)}</div> : <p className="text-sm theme-muted py-4">No upcoming scheduled posts.</p>}
+                </div>
+                <div className="rounded-2xl border p-5" style={{ background: "var(--bg-card)", borderColor: "var(--border)" }}>
+                  <h3 className="font-bold theme-heading">Recent Publishing Activity</h3><p className="text-sm theme-muted mt-1 mb-4">Latest status changes from your posts</p>
+                  {dashboard?.recentActivity?.length ? <div className="space-y-3">{dashboard.recentActivity.map((activity) => <div key={activity.id} className="flex items-center justify-between gap-3 border-t pt-3" style={{ borderColor: "var(--border)" }}><div className="min-w-0"><p className="text-sm theme-heading truncate">{activity.content}</p><p className="text-xs theme-muted mt-1">{activity.platforms?.join(", ") || "Post"}</p></div><div className="text-right shrink-0"><span className="text-xs font-semibold capitalize" style={{ color: activity.type === "failed" ? "#dc2626" : activity.type === "published" ? "#059669" : "var(--accent)" }}>{activity.type}</span><p className="text-[11px] theme-muted mt-1">{formatDateTimeIST(activity.createdAt)} IST</p></div></div>)}</div> : <p className="text-sm theme-muted py-4">No publishing activity yet.</p>}
+                </div>
               </section>
 
               {/* Recent Posts */}
@@ -389,7 +407,7 @@ function UserDashboard() {
 
               {/* Account Summary */}
 
-              <SocialAccounts />
+              <div id="social-accounts"><SocialAccounts /></div>
               
               {/* <section
                 className="mt-6 rounded-2xl p-6 md:p-8"

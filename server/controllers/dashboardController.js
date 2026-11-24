@@ -1,22 +1,33 @@
 const Post = require("../models/Post");
 const SocialAccount = require("../models/SocialAccount");
+const BufferConnection = require("../models/BufferConnection");
 const User = require("../models/User");
 
 const getDashboardOverview = async (req, res) => {
   try {
     const userId = req.user._id;
-    const [totalPosts, publishedPosts, scheduledPosts, draftPosts, connectedAccounts, recentPosts] = await Promise.all([
+    const now = new Date();
+    const [totalPosts, publishedPosts, scheduledPosts, draftPosts, failedPosts, socialAccounts, bufferConnection, recentPosts, upcomingPosts] = await Promise.all([
       Post.countDocuments({ user: userId }),
       Post.countDocuments({ user: userId, status: "published" }),
       Post.countDocuments({ user: userId, status: "scheduled" }),
       Post.countDocuments({ user: userId, status: "draft" }),
+      Post.countDocuments({ user: userId, status: "failed" }),
       SocialAccount.countDocuments({ user: userId, isActive: true }),
-      Post.find({ user: userId }).select("content platforms status scheduledAt publishedAt createdAt").sort({ createdAt: -1 }).limit(5).lean(),
+      BufferConnection.findOne({ user: userId, isActive: true }).select("channels").lean(),
+      Post.find({ user: userId }).select("content media platforms platformResults status scheduledAt publishedAt createdAt updatedAt").sort({ updatedAt: -1 }).limit(8).lean(),
+      Post.find({ user: userId, status: "scheduled", scheduledAt: { $gte: now } }).select("content platforms scheduledAt").sort({ scheduledAt: 1 }).limit(5).lean(),
     ]);
+
+    const connectedAccounts = socialAccounts + (bufferConnection?.channels || []).filter((channel) => !channel.isDisconnected && !channel.isLocked).length;
+    const recentActivity = recentPosts.filter((post) => ["published", "failed", "scheduled", "publishing"].includes(post.status)).slice(0, 6).map((post) => ({
+      id: String(post._id), type: post.status, content: post.content, platforms: post.platforms,
+      createdAt: post.updatedAt || post.createdAt, scheduledAt: post.scheduledAt, publishedAt: post.publishedAt,
+    }));
 
     return res.status(200).json({ success: true, message: "Dashboard data fetched successfully", data: {
       user: { id: req.user._id, name: req.user.name, email: req.user.email, role: req.user.role },
-      stats: { totalPosts, publishedPosts, scheduledPosts, draftPosts, connectedAccounts }, recentPosts,
+      stats: { totalPosts, publishedPosts, scheduledPosts, draftPosts, failedPosts, connectedAccounts }, recentPosts, upcomingPosts, recentActivity,
     } });
   } catch (error) {
     console.error("Dashboard Error:", error.message);
