@@ -61,6 +61,7 @@ import AdminAnalytics from "./Pages/AdminAnalytics";
 import CreatePost from "./Pages/CreatePost";
 import MyPosts from "./Pages/MyPosts";
 import PostCalendar from "./Pages/PostCalendar";
+import UserAnalytics from "./Pages/UserAnalytics";
 
 
 function App() {
@@ -89,6 +90,7 @@ function App() {
       <Route path="/create-post" element={<CreatePost />} />
       <Route path="/my-posts" element={<MyPosts />} />
       <Route path="/calendar" element={<PostCalendar />} />
+      <Route path="/analytics" element={<UserAnalytics />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

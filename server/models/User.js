@@ -40,6 +40,26 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    subscription: {
+      plan: { type: String, enum: ["free", "premium"], default: "free" },
+      billingCycle: { type: String, enum: ["monthly", "yearly", null], default: null },
+      status: { type: String, enum: ["free", "active", "trialing", "past_due", "canceled"], default: "free" },
+      aiUsageCount: { type: Number, default: 0, min: 0 },
+      scheduledPostCount: { type: Number, default: 0, min: 0 },
+      currentPeriodStart: Date,
+      currentPeriodEnd: Date,
+    },
+
+    billingHistory: [{
+      provider: { type: String, default: null },
+      invoiceId: { type: String, default: null },
+      amount: { type: Number, default: null },
+      currency: { type: String, default: "INR" },
+      status: { type: String, enum: ["paid", "pending", "failed", "refunded"] },
+      paidAt: Date,
+      invoiceUrl: String,
+    }],
   },
   {
     timestamps: true,
