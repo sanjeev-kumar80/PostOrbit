@@ -2,6 +2,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { getMyPosts, deletePost, updatePost } from "../services/postService";
+import { getAvailableBufferChannels } from "../services/socialAccountService";
 
 // ─── Toast Notification System ───────────────────────────────────────────────
 function Toast({ toasts, removeToast }) {
@@ -75,6 +76,7 @@ function StatusBadge({ status }) {
     draft:     { bg: "#f59e0b22", text: "#d97706", label: "Draft" },
     scheduled: { bg: "#8b5cf622", text: "#7c3aed", label: "Scheduled" },
     published: { bg: "#10b98122", text: "#059669", label: "Published" },
+    publishing: { bg: "#0ea5e922", text: "#0284c7", label: "Publishing" },
     failed:    { bg: "#ef444422", text: "#dc2626", label: "Failed" },
   };
   const s = map[status] || { bg: "var(--surface-hover)", text: "var(--accent)", label: status };
@@ -89,8 +91,6 @@ function StatusBadge({ status }) {
 }
 
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
-const PLATFORM_OPTIONS = ["instagram", "facebook", "linkedin"];
-
 function toLocalDateTimeInput(value) {
   if (!value) return "";
   const date = new Date(value);
@@ -102,7 +102,8 @@ function toLocalDateTimeInput(value) {
 
 function EditModal({ post, onClose, onSave }) {
   const [content, setContent] = useState(post.content || "");
-  const [platforms, setPlatforms] = useState(post.platforms || []);
+  const [channels, setChannels] = useState([]);
+  const [channelIds, setChannelIds] = useState(post.channelIds || []);
   const [status, setStatus] = useState(
     ["draft", "scheduled"].includes(post.status) ? post.status : "draft"
   );
@@ -116,13 +117,14 @@ function EditModal({ post, onClose, onSave }) {
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState("");
 
-  const togglePlatform = (p) =>
-    setPlatforms((prev) => prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]);
+  useEffect(() => { getAvailableBufferChannels().then(setChannels).catch((error) => setErr(error.message)); }, []);
+
+  const toggleChannel = (id) => setChannelIds((previous) => previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id]);
 
   const handleSave = async () => {
     setErr("");
     if (!content.trim()) { setErr("Content cannot be empty."); return; }
-    if (platforms.length === 0) { setErr("Select at least one platform."); return; }
+    if (status === "scheduled" && channelIds.length === 0) { setErr("Select at least one Buffer channel."); return; }
     if (status === "scheduled" && (!scheduledAt || new Date(scheduledAt) <= new Date())) {
       setErr("Pick a future date/time for scheduling."); return;
     }
@@ -130,11 +132,11 @@ function EditModal({ post, onClose, onSave }) {
       setSaving(true);
       const updated = await updatePost(post._id, {
         content: content.trim(),
-        platforms,
+        channelIds,
         status,
         scheduledAt: status === "scheduled" ? new Date(scheduledAt).toISOString() : null,
       });
-      onSave(updated.data || { ...post, content, platforms, status, scheduledAt });
+      onSave(updated.data || { ...post, content, channelIds, status, scheduledAt });
     } catch (e) {
       setErr(e.message || "Failed to save.");
     } finally {
@@ -171,24 +173,9 @@ function EditModal({ post, onClose, onSave }) {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-2">Platforms</label>
-          <div className="flex flex-wrap gap-2">
-            {PLATFORM_OPTIONS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => togglePlatform(p)}
-                className="px-3 py-1.5 rounded-full text-xs font-semibold border capitalize transition-all"
-                style={{
-                  borderColor: platforms.includes(p) ? "var(--accent)" : "var(--border)",
-                  background: platforms.includes(p) ? "var(--surface-hover)" : "transparent",
-                  color: platforms.includes(p) ? "var(--accent)" : "var(--text-secondary)",
-                }}
-              >
-                {p}
-              </button>
-            ))}
-          </div>
+          <label className="block text-sm font-semibold mb-2">Buffer channels</label>
+          {post.bufferPostIds?.length > 0 && <p className="text-xs theme-muted mb-2">Channels cannot be changed on a post already queued in Buffer.</p>}
+          {channels.length ? <div className="flex flex-wrap gap-2">{channels.map((channel) => <button key={channel.id} type="button" disabled={post.bufferPostIds?.length > 0} onClick={() => toggleChannel(channel.id)} className="px-3 py-1.5 rounded-full text-xs font-semibold border disabled:opacity-60" style={{ borderColor: channelIds.includes(channel.id) ? "var(--accent)" : "var(--border)", background: channelIds.includes(channel.id) ? "var(--surface-hover)" : "transparent", color: channelIds.includes(channel.id) ? "var(--accent)" : "var(--text-secondary)" }}>{channel.displayName || channel.name} · {channel.service}</button>)}</div> : <p className="text-xs theme-muted">No Buffer channels are connected. Drafts can still be saved.</p>}
         </div>
 
         <div className="flex gap-3">
@@ -280,7 +267,7 @@ function DeleteConfirm({ post, onConfirm, onCancel, deleting }) {
 }
 
 // ─── Filter Tabs ──────────────────────────────────────────────────────────────
-const FILTER_TABS = ["all", "draft", "scheduled", "published"];
+const FILTER_TABS = ["all", "draft", "scheduled", "published", "failed"];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 function MyPosts() {
@@ -346,7 +333,7 @@ function MyPosts() {
   }, {});
 
   const formatDate = (d) => d
-    ? new Date(d).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
+    ? new Date(d).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })
     : "—";
 
   return (
@@ -510,6 +497,8 @@ function MyPosts() {
                       {post.content}
                     </p>
 
+                    {post.media?.length > 0 && <div className="flex gap-2 mt-3 overflow-x-auto">{post.media.map((item, index) => item.type === "image" ? <img key={`${item.url}-${index}`} src={item.url} alt="Post media" className="w-20 h-20 rounded-lg object-cover" /> : <video key={`${item.url}-${index}`} src={item.url} className="w-24 h-20 rounded-lg object-cover" controls />)}</div>}
+
                     {/* Platform Badges */}
                     <div className="flex flex-wrap gap-1.5 mt-3">
                       {(post.platforms || []).map((p) => (
@@ -529,7 +518,9 @@ function MyPosts() {
                       {post.publishedAt && (
                         <span>Published: {formatDate(post.publishedAt)}</span>
                       )}
+                      {post.bufferPostIds?.map((id) => <span key={id}>Buffer ID: {id}</span>)}
                     </div>
+                    {post.platformResults?.some((item) => item.error) && <div className="mt-2 text-xs text-red-500 space-y-1">{post.platformResults.filter((item) => item.error).map((item) => <p key={item.channelId || item.platform}>{item.channelName || item.platform}: {item.error}</p>)}</div>}
                   </div>
 
                   {/* Right: Status + Actions */}
@@ -546,12 +537,10 @@ function MyPosts() {
                           Edit
                         </button>
                       )}
-                      <button
+                      {post.status !== "published" && <button
                         onClick={() => setDeletingPost(post)}
                         className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-500/40 text-red-500 transition-all hover:bg-red-500/10"
-                      >
-                        Delete
-                      </button>
+                      >Delete</button>}
                     </div>
                   </div>
                 </div>
