@@ -41,9 +41,12 @@ const postSchema = new mongoose.Schema(
           enum: ["instagram", "facebook", "linkedin"],
           required: true,
         },
+        channelId: { type: String, default: null },
+        channelName: { type: String, default: "" },
+        bufferPostId: { type: String, default: null },
         status: {
           type: String,
-          enum: ["pending", "published", "failed"],
+          enum: ["pending", "draft", "scheduled", "publishing", "published", "failed"],
           default: "pending",
         },
         platformPostId: {
@@ -58,14 +61,18 @@ const postSchema = new mongoose.Schema(
           type: Date,
           default: null,
         },
+        scheduledAt: { type: Date, default: null },
       },
     ],
 
     status: {
       type: String,
-      enum: ["draft", "scheduled", "published", "failed"],
+      enum: ["draft", "scheduled", "publishing", "published", "failed"],
       default: "draft",
     },
+
+    channelIds: { type: [String], default: [] },
+    bufferPostIds: { type: [String], default: [] },
 
     scheduledAt: Date,
     publishedAt: Date,
