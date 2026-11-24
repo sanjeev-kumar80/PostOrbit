@@ -2,7 +2,10 @@
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
-require("dotenv").config();
+const fs = require("fs");
+const https = require("https");
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, ".env") });
 
 const connectDB = require("./config/db");
 
@@ -22,7 +25,7 @@ const configuredOrigins = [process.env.CLIENT_URL, process.env.CORS_ORIGINS]
   .filter(Boolean);
 const localDevOrigins = process.env.NODE_ENV === "production"
   ? []
-  : ["http://localhost:5173", "http://127.0.0.1:5173"];
+  : ["http://localhost:5173", "http://127.0.0.1:5173", "https://localhost:5173", "https://127.0.0.1:5173"];
 const allowedOrigins = new Set([...configuredOrigins, ...localDevOrigins]);
 
 // Middleware
@@ -41,7 +44,8 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.raw({ type: "application/octet-stream", limit: "100mb" }));
+app.use(express.json({ limit: "2mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -67,9 +71,14 @@ const startServer = async () => {
 
     const PORT = process.env.PORT || 5000;
 
-    app.listen(PORT, () => {
-      console.log(`PostOrbit server running on port ${PORT}`);
-    });
+    if (process.env.LOCAL_HTTPS === "true" && process.env.NODE_ENV !== "production") {
+      const keyPath = path.resolve(__dirname, process.env.LOCAL_HTTPS_KEY_PATH || ".cert/localhost-key.pem");
+      const certPath = path.resolve(__dirname, process.env.LOCAL_HTTPS_CERT_PATH || ".cert/localhost-cert.pem");
+      https.createServer({ key: fs.readFileSync(keyPath), cert: fs.readFileSync(certPath) }, app)
+        .listen(PORT, () => console.log(`PostOrbit HTTPS server running at https://localhost:${PORT}`));
+    } else {
+      app.listen(PORT, () => console.log(`PostOrbit server running on port ${PORT}`));
+    }
   } catch (error) {
     console.error("Server startup failed:", error.message);
     process.exit(1);

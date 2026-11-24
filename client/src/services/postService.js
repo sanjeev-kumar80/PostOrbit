@@ -35,6 +35,40 @@ export const createPost = async (data) => {
   return handleResponse(response);
 };
 
+export const uploadPostMedia = async (file) => {
+  const token = localStorage.getItem("postorbitToken");
+  if (!token) throw new Error("Please login first");
+  const response = await fetch(`${API_URL}/media`, { method: "POST", headers: {
+    Authorization: `Bearer ${token}`, "Content-Type": "application/octet-stream",
+    "X-File-Name": encodeURIComponent(file.name), "X-File-Content-Type": file.type,
+  }, body: file });
+  return handleResponse(response);
+};
+
+export const generatePostText = async (data) => {
+  const token = localStorage.getItem("postorbitToken");
+  if (!token) throw new Error("Please login first");
+  const response = await fetch(`${API_URL}/ai-caption`, { method: "POST", headers: {
+    "Content-Type": "application/json", Authorization: `Bearer ${token}`,
+  }, body: JSON.stringify(data) });
+  return handleResponse(response);
+};
+
+export const getPostAnalytics = async () => {
+  const response = await fetch(`${API_URL}/analytics`, { headers: getHeaders() });
+  return handleResponse(response);
+};
+
+export const getNotifications = async () => {
+  const response = await fetch(`${API_URL}/notifications`, { headers: getHeaders() });
+  return handleResponse(response);
+};
+
+export const markAllNotificationsRead = async () => {
+  const response = await fetch(`${API_URL}/notifications/read-all`, { method: "PATCH", headers: getHeaders() });
+  return handleResponse(response);
+};
+
 export const getMyPosts = async () => {
   const response = await fetch(API_URL, {
     method: "GET",
